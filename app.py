@@ -17,39 +17,40 @@ Session(app)
 
 # Datos de ejemplo: usuarios y permisos
 usuarios = {
-    'admin': {
-        'password': 'admin123',
+    'victor.lm': {
+        'password': 'victor.lm',
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
             'clientes': ['crear', 'consultar'],
             'cobros': ['crear', 'consultar']
         }
     },
-    'vendedor': {
-        'password': 'vendedor123',
+    'adrian.ad': {
+        'password': 'adrian.ad',
+        'permisos': {
+            'tarjetas': ['crear', 'consultar'],
+            'clientes': ['crear', 'consultar'],
+            'cobros': ['crear', 'consultar']
+        }
+    },    
+    'fray.lm': {
+        'password': 'fray.lm',
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
             'clientes': ['crear'],
             'cobros': ['crear', 'consultar']
         }
     },
-    'repartidor': {
-        'password': 'repartidor123',
+    'parra.pa': {
+        'password': 'parra.pa',
         'permisos': {
             'tarjetas': [],
             'clientes': ['consultar'],
             'cobros': ['crear', 'consultar']
         }
     },
-    'cobrador': {
-        'password': 'cobrador123',
-        'permisos': {
-            'tarjetas': [],
-            'clientes': ['consultar'],
-            'cobros': ['crear', 'consultar']
-        }
-    },    
-    'auxiliar': {
+  
+    'auxiliar.au': {
         'password': 'auxiliar123',
         'permisos': {}
     }
