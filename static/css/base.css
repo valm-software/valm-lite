@@ -1,0 +1,15 @@
+.tabla-con-scroll {
+    overflow-x: auto;
+}
+.fila-verde {
+    background-color: lightgreen;
+}
+
+.fila-roja {
+    background-color: lightcoral;
+}
+
+.f-pago {
+    min-width: 120px;  /* O el tamaño que prefieras */
+    white-space: nowrap;
+}
