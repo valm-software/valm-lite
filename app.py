@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g
-=======
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
 import mysql.connector
->>>>>>> b4bc452611e946eedc5a5b9df6e7c7bd49144082
 from flask_session import Session
 from datetime import timedelta
 from functools import wraps
@@ -187,13 +183,13 @@ def consultar_tarjeta(usuario):
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
     
-    if request.method == 'POST':
-        id_venta = request.form['id_venta']
-        connection = conectar_db()
+    # if request.method == 'POST':
+    #     id_venta = request.form['id_venta']
+    #     connection = conectar_db()
 
-    if connection:
-        resultados = ejecutar_consultas(connection, id_venta)
-        connection.close()
+    # if connection:
+    #     resultados = ejecutar_consultas(connection, id_venta)
+    #     connection.close()
     if 'consultar' in permisosConsultar:
         return render_template('consultar_tarjeta.html', permisos=permisos, usuario=usuario, resultados=resultados)
     else:
@@ -267,19 +263,6 @@ def consultar_cobro(usuario):
         return "Acceso denegado: No puedes acceder a esta página."
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('tarjetas', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
-<<<<<<< HEAD
-    
-    # if request.method == 'POST':
-    #     id_venta = request.form['id_venta']
-    #     connection = conectar_db()
-
-    # if connection:
-    #     resultados = ejecutar_consultas(connection, id_venta)
-    #     connection.close()
-
-    if 'consultar' in permisosConsultar:
-        return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
-=======
     if 'consultar' in permisosConsultar:
         return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
     else:
@@ -306,13 +289,10 @@ def consultar_gastos(usuario):
     permisos = usuarios.get(usuario, {}).get('permisos', {})
     if 'consultar' in permisosConsultar:
         return render_template('consultar_gastos.html', permisos=permisos, usuario=usuario)
->>>>>>> b4bc452611e946eedc5a5b9df6e7c7bd49144082
     else:
         return "No tienes permisos para ver esta página."
 
 
-<<<<<<< HEAD
-=======
 @app.route('/menu/inicio/<usuario>')
 @login_required
 def inicio_web(usuario):
@@ -325,7 +305,6 @@ def inicio_web(usuario):
     else:
         return "No tienes permisos para ver esta página."
 
->>>>>>> b4bc452611e946eedc5a5b9df6e7c7bd49144082
 if __name__ == '__main__':
    app.run(debug=True, port=8000)
 
