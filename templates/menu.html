@@ -5,8 +5,7 @@
 {% block content %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="#">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
-
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="d-inline-block align-top" style="width: 4rem; height: 4rem;">
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -16,14 +15,14 @@
             {% if 'tarjetas' in permisos %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="tarjetasDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="bi bi-basket-fill"></i> Tarjetas
+                        <i class="bi bi-basket-fill  icon-large"></i> Tarjetas
                     </a>
                     <div class="dropdown-menu" aria-labelledby="tarjetasDropdown">
                         {% if 'crear' in permisos['tarjetas'] %}
-                            <a class="dropdown-item" href="{{ url_for('crear_tarjeta', usuario=usuario) }}"><i class="bi bi-bag-plus-fill"></i> Crear Tarjeta</a>
+                            <a class="dropdown-item" href="{{ url_for('crear_tarjeta', usuario=usuario) }}"><i class="bi bi-bag-plus-fill  icon-large"></i> Crear Tarjeta</a>
                         {% endif %}
                         {% if 'consultar' in permisos['tarjetas'] %}
-                            <a class="dropdown-item" href="{{ url_for('consultar_tarjeta', usuario=usuario) }}"><i class="bi bi-bag-check-fill"></i> Consultar Tarjeta</a>
+                            <a class="dropdown-item" href="{{ url_for('consultar_tarjeta', usuario=usuario) }}"><i class="bi bi-bag-check-fill  icon-large"></i> Consultar Tarjeta</a>
                         {% endif %}
                     </div>
                 </li>
@@ -31,14 +30,14 @@
             {% if 'clientes' in permisos %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="clientesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="bi bi-person-fill-gear"></i> Clientes
+                        <i class="bi bi-person-fill-gear  icon-large"></i> Clientes
                     </a>
                     <div class="dropdown-menu" aria-labelledby="clientesDropdown">
                         {% if 'crear' in permisos['clientes'] %}
-                            <a class="dropdown-item" href="{{ url_for('crear_cliente', usuario=usuario) }}"><i class="bi bi-person-fill-add"></i> Crear Cliente</a>
+                            <a class="dropdown-item" href="{{ url_for('crear_cliente', usuario=usuario) }}"><i class="bi bi-person-fill-add  icon-large"></i> Crear Cliente</a>
                         {% endif %}
                         {% if 'consultar' in permisos['clientes'] %}
-                            <a class="dropdown-item" href="{{ url_for('consultar_cliente', usuario=usuario) }}"><i class="bi bi-person-bounding-box Heading"></i> Consultar Cliente</a>
+                            <a class="dropdown-item" href="{{ url_for('consultar_cliente', usuario=usuario) }}"><i class="bi bi-person-bounding-box icon-large"></i> Consultar Cliente</a>
                         {% endif %}
                     </div>
                 </li>
@@ -46,14 +45,14 @@
             {% if 'cobros' in permisos %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="cobrosDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="bi bi-briefcase-fill"></i> Cobros
+                        <i class="bi bi-briefcase-fill  icon-large"></i> Cobros
                     </a>
                     <div class="dropdown-menu" aria-labelledby="cobrosDropdown">
                         {% if 'crear' in permisos['cobros'] %}
-                            <a class="dropdown-item" href="{{ url_for('crear_cobro', usuario=usuario) }}"><i class="bi bi-currency-exchange"></i> Crear Cobro</a>
+                            <a class="dropdown-item" href="{{ url_for('crear_cobro', usuario=usuario) }}"><i class="bi bi-currency-exchange  icon-large"  icon-large></i> Crear Cobro</a>
                         {% endif %}
                         {% if 'consultar' in permisos['cobros'] %}
-                            <a class="dropdown-item" href="{{ url_for('consultar_cobro', usuario=usuario) }}"><i class="bi bi-piggy-bank-fill"></i> Consultar Cobro</a>
+                            <a class="dropdown-item" href="{{ url_for('consultar_cobro', usuario=usuario) }}"><i class="bi bi-piggy-bank-fill  icon-large"></i> Consultar Cobro</a>
                         {% endif %}
                     </div>
                 </li>

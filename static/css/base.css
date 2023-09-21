@@ -13,3 +13,17 @@
     min-width: 120px;  /* O el tamaño que prefieras */
     white-space: nowrap;
 }
+
+.icon-large {
+    font-size: 2rem; /* Puedes ajustar este valor según tus necesidades */
+}
+
+/* Estilo para el texto del menú principal */
+.navbar-nav .nav-link {
+    font-size: 2rem; /* Puedes ajustar el tamaño según tus preferencias */
+}
+
+/* Estilo para el texto de los submenús (dropdowns) */
+.dropdown-menu .dropdown-item {
+    font-size: 2rem; /* Puedes ajustar el tamaño según tus preferencias */
+}
