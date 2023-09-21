@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
-import mysql.connector
 from flask_session import Session
 from datetime import timedelta
 from functools import wraps
+from database import init_app
+from models.Clientes import db, Cliente
+from models.VentasEncabezados import db, VentaEncabezado
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -14,6 +16,11 @@ app.config['SESSION_USE_SIGNER'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
 
 Session(app)
+
+
+# Configura la conexión a la base de datos desde database.py
+init_app(app)
+
 
 # Datos de ejemplo: usuarios y permisos
 usuarios = {
@@ -55,105 +62,6 @@ usuarios = {
         'permisos': {}
     }
 }
-
-
-
-def conectar_db():
-    try:
-        connection = mysql.connector.connect(
-            host="192.168.1.199",
-            user="javier",
-            password="valm2023",
-            database="bd_valm_lite"
-        )
-        return connection
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return None
-
-# Función para ejecutar las consultas (la misma que antes)
-def ejecutar_consultas(connection, id_venta):
-    # Consultas SQL proporcionadas
-    queries = [
-        f"""
-       select a.id as 'Nº Fac',
-       a.NumTarjeta as 'Nº Tarjeta', 
-       substring(a.FVenta,1,10) as 'F. Venta',
-       b.DNI as 'DNI',
-       b.Nombres as 'Nombre',
-       b.Apellidos as 'Apellido',
-       b.Telefono1 as 'Teléfono',
-       b.Direccion as 'Dirección',
-       concat(FORMAT(a.ImporteVenta, 2, 'es_ES'),'$') as 'Importe Venta',
-       concat(FORMAT(a.ImporteInicial, 2, 'es_ES'),'$') as 'Importe Inicial',
-       a.NumCuotas as 'Nª Cuotas',
-       IFNULL(e.NumcuotasPagadas, 0) AS 'Nº Cuotas Pagadas',
-       IFNULL(concat(FORMAT(e.ImpCuotaspagadas, 2, 'es_ES'),'$'), 0) AS 'Imp Cuotas Pagadas',       
-       concat(FORMAT(ImporteVenta - (ImporteInicial + IFNULL(e.ImpCuotaspagadas, 0)), 2, 'es_ES'),'$') as 'Imp Pendiente',
-       concat(FORMAT(a.ImporteCuota, 2, 'es_ES'),'$') as 'Imp Cuota',
-       a.FProxCuota as 'F. Proxima Cuota',
-       c.Nombre as 'Periosidad de cobro',
-       d.Nombre as 'Vendedor',
-		  CASE a.Cerrado 
-		      WHEN 1 THEN 'SI'
-		      ELSE 'NO'
-		  END AS 'Cerrado'		   
-        from VentasEncabezados as a 
-        inner join Clientes as b on a.IdCliente  = b.Id 
-        inner join CompromisoDePagos as c on a.IdCompPago  = c.Id 
-        inner join Usuarios as d on a.IdUsuario = d.Id 
-        LEFT JOIN (
-            SELECT
-                IdVentaEncabezado,
-                SUM(Abono) AS ImpCuotaspagadas,
-                count(id) AS NumcuotasPagadas
-            FROM Cuotas
-            GROUP BY IdVentaEncabezado
-        ) AS e ON a.id = e.IdVentaEncabezado
-        where a.NumTarjeta ={id_venta};
-        """,
-        
-        f"""
-        select b.Id as IdProducto,
-	    b.Nombre,
-	     b.Descripcion,
-	    a.cantidad as 'Cantidad'
-        from VentasDetalles as a 
-        inner join Productos  as b on a.IdProducto  = b.Id
-        inner join VentasEncabezados as c on a.IdVentaEncabezado = c.Id 
-        where c.NumTarjeta = {id_venta};
-        """,
-        
-        f"""
-        select  c.nombre as Cobrador ,
-        a.NumCuota as 'Nº Cuota',
-        SUBSTR(a.fechaPago,1,10) as 'F. Pago',
-        concat(FORMAT(a.abono, 2, 'es_ES'),'$') AS Abono,
-        concat(FORMAT(a.saldo, 2, 'es_ES'),'$') as Saldo,
-		  CASE a.liquidado
-		      WHEN 1 THEN 'SI'
-		      ELSE 'NO'
-		  END as 'Liquidado',        
-        substring(fechaLiquidacion,1,10)as 'F. Liquidado'        
-        from Cuotas as a
-        inner join MediosDePagos as b on a.IdMedioDePago  = b.Id
-        inner join Usuarios as c on a.IdUsuario = c.Id 
-        inner join VentasEncabezados as d on a.IdVentaEncabezado  = d.Id 
-        where d.NumTarjeta  = {id_venta};
-        """
-    ]
-    
-    results = []
-    cursor = connection.cursor(dictionary=True)  
-    for query in queries:
-        cursor.execute(query)
-        result = cursor.fetchall()
-        if result:
-            results.append(result)
-    cursor.close()
-    return results
-
-
 
 
 # Decorador para requerir inicio de sesión
@@ -288,6 +196,19 @@ def crear_cliente(usuario):
 
 
 
+# @app.route('/menu/clientes/consultar/<usuario>')
+# @login_required
+# def consultar_cliente(usuario):
+#     if usuario != session['usuario']:
+#         return "Acceso denegado: No puedes acceder a esta página."
+#     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('clientes', [])
+#     permisos = usuarios.get(usuario, {}).get('permisos', {})
+#     if 'consultar' in permisosConsultar:
+#         return render_template('consultar_cliente.html', permisos=permisos, usuario=usuario)
+#     else:
+#         return "No tienes permisos para ver esta página."
+
+
 @app.route('/menu/clientes/consultar/<usuario>')
 @login_required
 def consultar_cliente(usuario):
@@ -296,9 +217,14 @@ def consultar_cliente(usuario):
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('clientes', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
     if 'consultar' in permisosConsultar:
-        return render_template('consultar_cliente.html', permisos=permisos, usuario=usuario)
+        # Realiza la consulta a la base de datos para obtener los clientes
+        clientes = Cliente.query.all()  # Esto supone que tienes un modelo Cliente
+
+        # Renderiza la plantilla y pasa los clientes como argumento
+        return render_template('consultar_cliente.html', permisos=permisos, usuario=usuario, clientes=clientes)
     else:
         return "No tienes permisos para ver esta página."
+
 
 
 
@@ -324,20 +250,18 @@ def consultar_cobro(usuario):
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
     
-    if request.method == 'POST':
-        id_venta = request.form['id_venta']
-        connection = conectar_db()
+    # if request.method == 'POST':
+    #     id_venta = request.form['id_venta']
+    #     connection = conectar_db()
 
-    if connection:
-        resultados = ejecutar_consultas(connection, id_venta)
-        connection.close()
+    # if connection:
+    #     resultados = ejecutar_consultas(connection, id_venta)
+    #     connection.close()
+
     if 'consultar' in permisosConsultar:
-        return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario, resultados=resultados)
+        return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
     else:
         return "No tienes permisos para ver esta página."
-
-
-
 
 
 if __name__ == '__main__':

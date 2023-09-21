@@ -2,8 +2,34 @@
 
 {% block content %}
 <div class="jumbotron text-center">
-    <h1>Bienvenido</h1>
-    <p>consultar_cliente.html!</p>
-    <i class="bi bi-whatsapp"></i>
+    <div style="overflow-x:auto;">
+        <table class="table table-striped" style="width:100%; text-align:left;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>DNI</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Telefono1</th>
+                    <th>Direccion</th>
+                    <!-- Agrega más columnas según los campos de tu modelo Cliente -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.Id }}</td>
+                    <td>{{ cliente.DNI }}</td>
+                    <td>{{ cliente.Nombres }}</td>
+                    <td>{{ cliente.Apellidos }}</td>
+                    <td>{{ cliente.Telefono1 }}</td>
+                    <td>{{ cliente.Direccion }}</td>
+                    <!-- Agrega más columnas según los campos de tu modelo Cliente -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
 {% endblock %}
