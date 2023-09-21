@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
+=======
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
+import mysql.connector
+>>>>>>> b4bc452611e946eedc5a5b9df6e7c7bd49144082
 from flask_session import Session
 from datetime import timedelta
 from functools import wraps
@@ -29,7 +34,9 @@ usuarios = {
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
             'clientes': ['crear', 'consultar'],
-            'cobros': ['crear', 'consultar']
+            'cobros': ['crear', 'consultar'],
+            'gastos': ['crear', 'consultar'],
+            'inicio': ['crear', 'consultar']
         }
     },
     'adrian.ad': {
@@ -95,7 +102,7 @@ def login():
         if usuario in usuarios and usuarios[usuario]['password'] == password:
             session['usuario'] = usuario
             flash('Inicio de sesión exitoso', 'success')
-            return redirect(url_for('menu', usuario=usuario))
+            return redirect(url_for('inicio_web', usuario=usuario))
         else:
             flash('Credenciales incorrectas', 'danger')
     return render_template('login.html')
@@ -170,17 +177,30 @@ def crear_tarjeta(usuario):
     else:
         return "No tienes permisos para ver esta página."
 
-@app.route('/menu/tarjetas/consultar/<usuario>')
+@app.route('/menu/tarjetas/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
 def consultar_tarjeta(usuario):
+    connection = None  # <-- Inicialización de la variable connection
+    resultados = None
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
-    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('tarjetas', [])
+    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
+    
+    if request.method == 'POST':
+        id_venta = request.form['id_venta']
+        connection = conectar_db()
+
+    if connection:
+        resultados = ejecutar_consultas(connection, id_venta)
+        connection.close()
     if 'consultar' in permisosConsultar:
-        return render_template('consultar_tarjeta.html', permisos=permisos, usuario=usuario)
+        return render_template('consultar_tarjeta.html', permisos=permisos, usuario=usuario, resultados=resultados)
     else:
         return "No tienes permisos para ver esta página."
+
+
+
 
 @app.route('/menu/clientes/crear/<usuario>')
 @login_required
@@ -240,15 +260,14 @@ def crear_cobro(usuario):
     else:
         return "No tienes permisos para ver esta página."
 
-@app.route('/menu/cobros/consultar/<usuario>', methods=['GET', 'POST'])
+@app.route('/menu/cobros/consultar/<usuario>')
 @login_required
 def consultar_cobro(usuario):
-    connection = None  # <-- Inicialización de la variable connection
-    resultados = None
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
-    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
+    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('tarjetas', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
+<<<<<<< HEAD
     
     # if request.method == 'POST':
     #     id_venta = request.form['id_venta']
@@ -260,9 +279,53 @@ def consultar_cobro(usuario):
 
     if 'consultar' in permisosConsultar:
         return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
+=======
+    if 'consultar' in permisosConsultar:
+        return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
+    else:
+        return "No tienes permisos para ver esta página."
+
+@app.route('/menu/gastos/crear/<usuario>')
+@login_required
+def crear_gastos(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+    permisosCrear = usuarios.get(usuario, {}).get('permisos', {}).get('gastos', [])
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+    if 'crear' in permisosCrear:
+        return render_template('crear_gastos.html', permisos=permisos, usuario=usuario)
+    else:
+        return "No tienes permisos para ver esta página."
+
+@app.route('/menu/gastos/consultar/<usuario>')
+@login_required
+def consultar_gastos(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('gastos', [])
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+    if 'consultar' in permisosConsultar:
+        return render_template('consultar_gastos.html', permisos=permisos, usuario=usuario)
+>>>>>>> b4bc452611e946eedc5a5b9df6e7c7bd49144082
     else:
         return "No tienes permisos para ver esta página."
 
 
+<<<<<<< HEAD
+=======
+@app.route('/menu/inicio/<usuario>')
+@login_required
+def inicio_web(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('gastos', [])
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+    if 'consultar' in permisosConsultar:
+        return render_template('inicio.html', permisos=permisos, usuario=usuario)
+    else:
+        return "No tienes permisos para ver esta página."
+
+>>>>>>> b4bc452611e946eedc5a5b9df6e7c7bd49144082
 if __name__ == '__main__':
    app.run(debug=True, port=8000)
+

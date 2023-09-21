@@ -4,7 +4,7 @@
 
 {% block content %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">
+    <a class="navbar-brand" href="{{ url_for('inicio_web', usuario=usuario) }}">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="d-inline-block align-top" style="width: 4rem; height: 4rem;">
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,6 +57,21 @@
                     </div>
                 </li>
             {% endif %}
+            {% if 'gastos' in permisos %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="gastosDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="bi bi-bank2  icon-large"></i> Gastos
+                </a>
+                <div class="dropdown-menu" aria-labelledby="gastosDropdown">
+                    {% if 'crear' in permisos['gastos'] %}
+                        <a class="dropdown-item" href="{{ url_for('crear_gastos', usuario=usuario) }}"><i class="bi bi-coin  icon-large"  icon-large></i> Crear Gastos</a>
+                    {% endif %}
+                    {% if 'consultar' in permisos['gastos'] %}
+                        <a class="dropdown-item" href="{{ url_for('consultar_gastos', usuario=usuario) }}"><i class="bi bi-bar-chart-fill  icon-large"></i> Consultar Gastos</a>
+                    {% endif %}
+                </div>
+            </li>
+        {% endif %}
         </ul>
     </div>
     <div class="navbar-nav ml-auto align-items-center my-0"> <!-- Alineación a la derecha y en la misma línea -->

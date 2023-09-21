@@ -1,0 +1,54 @@
+{% include 'menu.html' %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h3 id="fecha-hora"></h3>
+    <div id="map" style="height: 400px; width: 100%; margin: auto;"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var map = L.map('map').setView([0, 0], 13);  // Inicializamos el mapa con unas coordenadas genéricas.
+
+        // Usamos OpenStreetMap como proveedor de los mapas.
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Función para actualizar la fecha y hora.
+        function updateDateTime() {
+            var fecha = new Date();
+            var opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' };
+            var fechaHoraStr = new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
+            document.getElementById('fecha-hora').innerText = fechaHoraStr;
+        }
+
+        // Llama a la función inmediatamente para establecer la hora actual.
+        updateDateTime();
+
+        // Actualiza la fecha y hora cada segundo (1000 milisegundos).
+        setInterval(updateDateTime, 1000);
+
+        // Obtener la ubicación del usuario.
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                
+                map.setView(pos, 13);  // Centramos el mapa en la ubicación del usuario.
+                L.marker(pos).addTo(map)  // Añadimos un marcador en la ubicación del usuario.
+                    .bindPopup('Tu ubicación actual').openPopup();
+
+            }, function() {
+                alert("No se pudo obtener tu ubicación.");
+            });
+        } else {
+            alert("Tu navegador no soporta la geolocalización.");
+        }
+    });
+    
+</script>
+{% endblock %}
