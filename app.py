@@ -110,7 +110,7 @@ def ejecutar_consultas(connection, id_venta):
             FROM Cuotas
             GROUP BY IdVentaEncabezado
         ) AS e ON a.id = e.IdVentaEncabezado
-        where a.id = {id_venta};
+        where a.NumTarjeta ={id_venta};
         """,
         
         f"""
@@ -119,8 +119,9 @@ def ejecutar_consultas(connection, id_venta):
 	     b.Descripcion,
 	    a.cantidad as 'Cantidad'
         from VentasDetalles as a 
-        inner join Productos  as b on a.IdProducto  = b.Id  
-        where a.IdVentaEncabezado  = {id_venta};
+        inner join Productos  as b on a.IdProducto  = b.Id
+        inner join VentasEncabezados as c on a.IdVentaEncabezado = c.Id 
+        where c.NumTarjeta = {id_venta};
         """,
         
         f"""
@@ -137,7 +138,8 @@ def ejecutar_consultas(connection, id_venta):
         from Cuotas as a
         inner join MediosDePagos as b on a.IdMedioDePago  = b.Id
         inner join Usuarios as c on a.IdUsuario = c.Id 
-        where a.IdVentaEncabezado  = {id_venta};
+        inner join VentasEncabezados as d on a.IdVentaEncabezado  = d.Id 
+        where d.NumTarjeta  = {id_venta};
         """
     ]
     
