@@ -200,21 +200,21 @@ def consultar_tarjeta(usuario):
             cursor_encabezado.callproc('getTarjetaEncabezado', [id_venta])
             resultados_encabezado = [dict(zip([column[0] for column in cursor_encabezado.description], row)) for row in cursor_encabezado.fetchall()]
             cursor_encabezado.close()
-            # print('resultados_encabezado: ', resultados_encabezado)            
+            print('resultados_encabezado: ', resultados_encabezado)            
             
             # Ejecutar el procedimiento almacenado getTarjetaProductos
             cursor_productos = db.session.connection().connection.cursor()
             cursor_productos.callproc('getTarjetaProductos', [id_venta])
             resultados_productos = [dict(zip([column[0] for column in cursor_productos.description], row)) for row in cursor_productos.fetchall()]
             cursor_productos.close()
-            # print('resultados_productos: ', resultados_productos)
+            print('resultados_productos: ', resultados_productos)
             
             # Ejecutar el procedimiento almacenado getTarjetaCuotas
             cursor_cuotas = db.session.connection().connection.cursor()
             cursor_cuotas.callproc('getTarjetaCuotas', [id_venta])
             resultados_cuotas = [dict(zip([column[0] for column in cursor_cuotas.description], row)) for row in cursor_cuotas.fetchall()]
             cursor_cuotas.close()
-            # print('resultados_cuotas: ', resultados_cuotas)
+            print('resultados_cuotas: ', resultados_cuotas)
 
             # Confirmar los cambios (en caso de que los procedimientos hayan modificado la base de datos)
             db.session.commit()

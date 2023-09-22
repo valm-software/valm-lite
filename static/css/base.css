@@ -1,13 +1,6 @@
 .tabla-con-scroll {
     overflow-x: auto;
 }
-.fila-verde {
-    background-color: lightgreen;
-}
-
-.fila-roja {
-    background-color: lightcoral;
-}
 
 .f-pago {
     min-width: 120px; 
@@ -26,4 +19,33 @@
 /* Estilo para el texto de los submenús (dropdowns) */
 .dropdown-menu .dropdown-item {
     font-size: 2rem; /* Puedes ajustar el tamaño según tus preferencias */
+}
+
+
+
+  /*Estilo spara lal pagina de consultar tarjeta */
+
+/* Estilos para las tarjetas */
+.card-effect {
+    transition: all 0.3s;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilos para las tablas */
+.table-relief {
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para fijar el ancho de la columna F. Pago */
+.fixed-width {
+    width: 110px;
+    min-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

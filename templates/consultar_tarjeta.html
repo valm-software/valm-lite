@@ -1,120 +1,83 @@
 {% include 'menu.html' %}
 
 {% block content %}
-<!-- Bloque 4: Formulario para introducir otro ID de venta -->
-
-
-<!-- Búsqueda de ficha -->
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <form action="{{ url_for('consultar_tarjeta', usuario=usuario) }}" method="post">
-            <div class="form-row align-items-center text-center">
-                <!-- Label centrado verticalmente entre el cuadro de texto y el botón -->
-                <div class="col mb-2">
-                    <label for="id_venta" class="d-block">Nº DE TARJETA:</label>
-                </div>
-                <!-- Cuadro de texto -->
-                <div class="col">
-                    <input type="text" name="id_venta" class="form-control" required>
-                </div>
-                <!-- Botón centrado verticalmente -->
-                <div class="col">
-                    <button type="submit" class="btn btn-primary btn-block">Consultar</button>
-                </div>
-            </div>
-        </form>
+<div class="container mt-4">
+    <!-- Búsqueda de ficha -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-6">
+            <form action="{{ url_for('consultar_tarjeta', usuario=usuario) }}" method="post"
+                class="form-inline justify-content-center">
+                <label for="id_venta" class="mr-2">Nº DE TARJETA:</label>
+                <input type="text" name="id_venta" class="form-control mr-2" required>
+                <button type="submit" class="btn btn-primary">Consultar</button>
+            </form>
+        </div>
     </div>
-</div>
-
-<div class="jumbotron text-center">
 
     <!-- Encabezado -->
-    <div class="row mb-2 border-bottom">
+    <div class="row mb-3">
         <div class="col-12">
-            <h4>Encabezado:</h4>
+            <h4 class="text-center mb-2">Encabezado:</h4>
             {% if resultados_encabezado %}
             <div class="row">
                 <!-- Grupo 1 -->
-                <div class="col-md-4 mb-2">
-                    <label><strong>Nº Fac:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Nº Fac'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>F. Venta:</strong></label>
-                    <span>{{ resultados_encabezado[0]['F. Venta'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Vendedor:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Vendedor'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Periosidad de cobro:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Periosidad de cobro'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Cerrado:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Cerrado'] }}</span>
+                <div class="col-md-4">
+                    <div class="card mb-3 card-effect">
+                        <div class="card-body">
+                            <p><strong>Nº Fac:</strong> {{ resultados_encabezado[0]['Nº Fac'] }}</p>
+                            <p><strong>F. Venta:</strong> {{ resultados_encabezado[0]['F. Venta'] }}</p>
+                            <p><strong>Vendedor:</strong> {{ resultados_encabezado[0]['Vendedor'] }}</p>
+                            <p><strong>Periosidad de cobro:</strong> {{ resultados_encabezado[0]['Periosidad de cobro']
+                                }}</p>
+                            <p><strong>Cerrado:</strong> {{ resultados_encabezado[0]['Cerrado'] }}</p>
+                        </div>
+                    </div>
                 </div>
                 <!-- Grupo 2 -->
-                <div class="col-md-4 mb-2">
-                    <label><strong>Nombre:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Nombre'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Apellido:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Apellido'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>DNI:</strong></label>
-                    <span>{{ resultados_encabezado[0]['DNI'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Teléfono:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Teléfono'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Dirección:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Dirección'] }}</span>
+                <div class="col-md-4">
+                    <div class="card mb-3 card-effect">
+                        <div class="card-body">
+                            <p><strong>Nombre:</strong> {{ resultados_encabezado[0]['Nombre'] }}</p>
+                            <p><strong>Apellido:</strong> {{ resultados_encabezado[0]['Apellido'] }}</p>
+                            <p><strong>DNI:</strong> {{ resultados_encabezado[0]['DNI'] }}</p>
+                            <p><strong>Teléfono:</strong> {{ resultados_encabezado[0]['Teléfono'] }}</p>
+                            <p><strong>Dirección:</strong> {{ resultados_encabezado[0]['Dirección'] }}</p>
+                        </div>
+                    </div>
                 </div>
                 <!-- Grupo 3 -->
-                <div class="col-md-4 mb-2">
-                    <label><strong>Importe Venta:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Importe Venta'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Importe Inicial:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Importe Inicial'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Imp Pendiente:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Imp Pendiente'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Imp Cuotas Pagadas:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Imp Cuotas Pagadas'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>Nº Cuotas Pagadas:</strong></label>
-                    <span>{{ resultados_encabezado[0]['Nº Cuotas Pagadas'] }}</span>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <label><strong>F. Proxima Cuota:</strong></label>
-                    <span>{{ resultados_encabezado[0]['F. Proxima Cuota'] }}</span>
+                <div class="col-md-4">
+                    <div class="card mb-3 card-effect">
+                        <div class="card-body">
+                            <p><strong>Importe Venta:</strong> {{ resultados_encabezado[0]['Importe Venta'] }}</p>
+                            <p><strong>Importe Inicial:</strong> {{ resultados_encabezado[0]['Importe Inicial'] }}</p>
+                            <p><strong>Imp Pendiente:</strong> {{ resultados_encabezado[0]['Imp Pendiente'] }}</p>
+                            <p><strong>Imp Cuotas Pagadas:</strong> {{ resultados_encabezado[0]['Imp Cuotas Pagadas'] }}
+                            </p>
+                            <p><strong>Nº Cuotas Pagadas:</strong> {{ resultados_encabezado[0]['Nº Cuotas Pagadas'] }}
+                            </p>
+                            <p><strong>F. Proxima Cuota:</strong> {{ resultados_encabezado[0]['F. Proxima Cuota'] }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% else %}
-            <p>No hay resultados para mostrar en el encabezado.</p>
+            <p class="text-center">No hay resultados para mostrar en el encabezado.</p>
             {% endif %}
         </div>
     </div>
 
+
     <!-- Productos -->
-    <div class="row mb-4 border-bottom">
+
+
+    <!-- Productos -->
+    <div class="row mb-3">
         <div class="col-12">
-            <h4>Productos:</h4>
+            <h4 class="text-center mb-2">Productos:</h4>
             <div class="table-responsive">
                 {% if resultados_productos %}
-                <table class="table table-striped" style="width:100%; text-align:left;">
+                <table class="table table-striped table-bordered table-relief">
                     <thead>
                         <tr>
                             {% for key, value in resultados_productos[0].items() %}
@@ -133,24 +96,25 @@
                     </tbody>
                 </table>
                 {% else %}
-                <p>No hay resultados de productos para mostrar.</p>
+                <p class="text-center">No hay resultados de productos para mostrar.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
+
     <!-- Detalles de Cuotas -->
-    <div class="row mb-4">
+    <div class="row">
         <div class="col-12">
-            <h4>Detalles de Cuotas:</h4>
+            <h4 class="text-center mb-2">Detalles de Cuotas:</h4>
             <div class="table-responsive">
                 {% if resultados_cuotas %}
-                <table class="table table-striped" style="width:100%; text-align:left;">
+                <table class="table table-striped table-bordered table-relief">
                     <thead>
                         <tr>
                             {% for key, value in resultados_cuotas[0].items() %}
-                            <th>{{ key }}</th>
-                            {% endfor %}
+                            <th{% if key=='F. Pago' %} class="fixed-width" {% endif %}>{{ key }}</th>
+                                {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
@@ -164,10 +128,11 @@
                     </tbody>
                 </table>
                 {% else %}
-                <p>No hay detalles de cuotas para mostrar.</p>
+                <p class="text-center">No hay detalles de cuotas para mostrar.</p>
                 {% endif %}
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}
