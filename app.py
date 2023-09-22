@@ -173,27 +173,67 @@ def crear_tarjeta(usuario):
     else:
         return "No tienes permisos para ver esta página."
 
+
+
+
+from flask import request, render_template
+
 @app.route('/menu/tarjetas/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
 def consultar_tarjeta(usuario):
-    connection = None  # <-- Inicialización de la variable connection
-    resultados = None
+    resultados_encabezado = None
+    resultados_productos = None
+    resultados_cuotas = None
+    
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
+    
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
     
-    # if request.method == 'POST':
-    #     id_venta = request.form['id_venta']
-    #     connection = conectar_db()
+    if request.method == 'POST':
+        id_venta = request.form['id_venta']  # Obtener el valor del formulario (ajustar el nombre del campo)
+        
+        try:
+            # Ejecutar el procedimiento almacenado getTarjetaEncabezado
+            cursor_encabezado = db.session.connection().connection.cursor()
+            cursor_encabezado.callproc('getTarjetaEncabezado', [id_venta])
+            resultados_encabezado = [dict(zip([column[0] for column in cursor_encabezado.description], row)) for row in cursor_encabezado.fetchall()]
+            cursor_encabezado.close()
+            # print('resultados_encabezado: ', resultados_encabezado)            
+            
+            # Ejecutar el procedimiento almacenado getTarjetaProductos
+            cursor_productos = db.session.connection().connection.cursor()
+            cursor_productos.callproc('getTarjetaProductos', [id_venta])
+            resultados_productos = [dict(zip([column[0] for column in cursor_productos.description], row)) for row in cursor_productos.fetchall()]
+            cursor_productos.close()
+            # print('resultados_productos: ', resultados_productos)
+            
+            # Ejecutar el procedimiento almacenado getTarjetaCuotas
+            cursor_cuotas = db.session.connection().connection.cursor()
+            cursor_cuotas.callproc('getTarjetaCuotas', [id_venta])
+            resultados_cuotas = [dict(zip([column[0] for column in cursor_cuotas.description], row)) for row in cursor_cuotas.fetchall()]
+            cursor_cuotas.close()
+            # print('resultados_cuotas: ', resultados_cuotas)
 
-    # if connection:
-    #     resultados = ejecutar_consultas(connection, id_venta)
-    #     connection.close()
+            # Confirmar los cambios (en caso de que los procedimientos hayan modificado la base de datos)
+            db.session.commit()
+        except Exception as e:
+            # Manejar cualquier error que ocurra durante la ejecución de los procedimientos
+            print("Error al ejecutar los procedimientos:", e)
+            db.session.rollback()  # Revertir cualquier cambio en caso de error
+
     if 'consultar' in permisosConsultar:
-        return render_template('consultar_tarjeta.html', permisos=permisos, usuario=usuario, resultados=resultados)
+        return render_template('consultar_tarjeta.html', permisos=permisos, usuario=usuario, 
+                               resultados_encabezado=resultados_encabezado,
+                               resultados_productos=resultados_productos,
+                               resultados_cuotas=resultados_cuotas)
     else:
         return "No tienes permisos para ver esta página."
+
+
+
+
 
 
 

@@ -1,143 +1,173 @@
 {% include 'menu.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<!-- Bloque 4: Formulario para introducir otro ID de venta -->
 
-    <!-- Bloque 4: Formulario para introducir otro ID de venta -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <h4>Consultar Tarjeta:</h4>
-            <form action="{{ url_for('consultar_tarjeta', usuario=usuario) }}" method="post">
-                <div class="form-row"> <!-- Usamos form-row para que los elementos estén en la misma línea -->
-                    <div class="form-group col-md-6">
-                        <label for="id_venta">Nº DE TARJETA:</label>
-                        <input type="text" name="id_venta" class="form-control" required>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="btn-submit" class="d-block invisible">Consultar</label> <!-- Etiqueta invisible para alinear el botón con el campo de entrada -->
-                        <input type="submit" value="Consultar" class="btn btn-primary">
-                    </div>
+
+<!-- Búsqueda de ficha -->
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <form action="{{ url_for('consultar_tarjeta', usuario=usuario) }}" method="post">
+            <div class="form-row align-items-center text-center">
+                <!-- Label centrado verticalmente entre el cuadro de texto y el botón -->
+                <div class="col mb-2">
+                    <label for="id_venta" class="d-block">Nº DE TARJETA:</label>
                 </div>
-            </form>
-        </div>
+                <!-- Cuadro de texto -->
+                <div class="col">
+                    <input type="text" name="id_venta" class="form-control" required>
+                </div>
+                <!-- Botón centrado verticalmente -->
+                <div class="col">
+                    <button type="submit" class="btn btn-primary btn-block">Consultar</button>
+                </div>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Bloque 1: Resultado de la primera consulta -->
-    <div class="row mb-4 border-bottom">
+<div class="jumbotron text-center">
+
+    <!-- Encabezado -->
+    <div class="row mb-2 border-bottom">
         <div class="col-12">
             <h4>Encabezado:</h4>
-            {% if resultados and resultados[0] %}
-                <div class="row">
-                    <!-- Grupo 1 -->
-                    <div class="col-xl-4 col-lg-12 mb-3">
-                        <div class="border p-2">
-                            <!-- <strong>Grupo 1:</strong><br> -->
-                            <div><strong>Nº Tarjeta:</strong> {{ resultados[0][0]['Nº Tarjeta'] }}</div>
-                            <div><strong>Nº Fac:</strong> {{ resultados[0][0]['Nº Fac'] }}</div>
-                            <div><strong>F. Venta:</strong> {{ resultados[0][0]['F. Venta'] }}</div>
-                            <div><strong>Vendedor:</strong> {{ resultados[0][0]['Vendedor'] }}</div>
-                            <div><strong>Periosidad de cobro:</strong> {{ resultados[0][0]['Periosidad de cobro'] }}</div>
-                            <div><strong>Cerrado:</strong> {{ resultados[0][0]['Cerrado'] }}</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Grupo 2 -->
-                    <div class="col-xl-4 col-lg-12 mb-3">
-                        <div class="border p-2">
-                            <!-- <strong>Grupo 2:</strong><br> -->
-                            <div><strong>Nombre:</strong> {{ resultados[0][0]['Nombre'] }}</div>
-                            <div><strong>Apellido:</strong> {{ resultados[0][0]['Apellido'] }}</div>
-                            <div><strong>DNI:</strong> {{ resultados[0][0]['DNI'] }}</div>
-                            <div><strong>Teléfono:</strong> {{ resultados[0][0]['Teléfono'] }}</div>
-                            <div><strong>Dirección:</strong> {{ resultados[0][0]['Dirección'] }}</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Grupo 3 -->
-                    <div class="col-xl-4 col-lg-12 mb-3">
-                        <div class="border p-2">
-                            <!-- <strong>Grupo 3:</strong><br> -->
-                            <div><strong>Importe Venta:</strong> {{ resultados[0][0]['Importe Venta'] }}</div>
-                            <div><strong>Importe Inicial:</strong> {{ resultados[0][0]['Importe Inicial'] }}</div>
-                            <div><strong>Imp Pendiente:</strong> {{ resultados[0][0]['Imp Pendiente'] }}</div>
-                            <div><strong>Imp Cuotas Pagadas:</strong> {{ resultados[0][0]['Imp Cuotas Pagadas'] }}</div>
-                            <div><strong>Nº Cuotas Pagadas:</strong> {{ resultados[0][0]['Nº Cuotas Pagadas'] }}</div>
-                            <div><strong>F. Proxima Cuota:</strong> {{ resultados[0][0]['F. Proxima Cuota'] }}</div>
-                        </div>
-                    </div>
+            {% if resultados_encabezado %}
+            <div class="row">
+                <!-- Grupo 1 -->
+                <div class="col-md-4 mb-2">
+                    <label><strong>Nº Fac:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Nº Fac'] }}</span>
                 </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>F. Venta:</strong></label>
+                    <span>{{ resultados_encabezado[0]['F. Venta'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Vendedor:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Vendedor'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Periosidad de cobro:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Periosidad de cobro'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Cerrado:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Cerrado'] }}</span>
+                </div>
+                <!-- Grupo 2 -->
+                <div class="col-md-4 mb-2">
+                    <label><strong>Nombre:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Nombre'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Apellido:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Apellido'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>DNI:</strong></label>
+                    <span>{{ resultados_encabezado[0]['DNI'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Teléfono:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Teléfono'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Dirección:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Dirección'] }}</span>
+                </div>
+                <!-- Grupo 3 -->
+                <div class="col-md-4 mb-2">
+                    <label><strong>Importe Venta:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Importe Venta'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Importe Inicial:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Importe Inicial'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Imp Pendiente:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Imp Pendiente'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Imp Cuotas Pagadas:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Imp Cuotas Pagadas'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>Nº Cuotas Pagadas:</strong></label>
+                    <span>{{ resultados_encabezado[0]['Nº Cuotas Pagadas'] }}</span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label><strong>F. Proxima Cuota:</strong></label>
+                    <span>{{ resultados_encabezado[0]['F. Proxima Cuota'] }}</span>
+                </div>
+            </div>
             {% else %}
-                <p>No hay resultados para mostrar en el encabezado.</p>
+            <p>No hay resultados para mostrar en el encabezado.</p>
             {% endif %}
         </div>
     </div>
-        <!-- Bloque 2: Resultado de la segunda consulta -->
-        <div class="row mb-4 border-bottom">
-            <div class="col-12">
-                <h4>Productos:</h4>
-                <div class="tabla-con-scroll">
-                    {% if resultados and resultados|length > 1 and resultados[1] %}
-                        <table class="table table-bordered">
-                            <!-- Encabezados -->
-                            <thead>
-                                <tr>
-                                    {% for key in resultados[1][0].keys() %}
-                                        <th>{{ key }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <!-- Datos -->
-                            <tbody>
-                                {% for row in resultados[1] %}
-                                    <tr>
-                                        {% for value in row.values() %}
-                                            <td>{{ value }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>No hay resultados de productos para mostrar.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Bloque 3: Resultado de la tercera consulta -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h4>Detalles de cuotas:</h4>
-                <div class="tabla-con-scroll">
-                    {% if resultados and resultados|length > 2 and resultados[2] %}
-                        <table class="table table-bordered">
-                            <!-- Encabezados -->
-                            <thead>
-                                <tr>
-                                    {% for key in resultados[2][0].keys() %}
-                                        <th class="{{ 'f-pago' if key == 'F. Pago' else '' }}">{{ key }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <!-- Datos -->
-                            <tbody>
-                                {% for row in resultados[2] %}
-                                    <tr class="{{ 'fila-verde' if row['Liquidado'] == 'SI' else 'fila-roja' }}">
-                                        {% for key, value in row.items() %}
-                                            <td class="{{ 'f-pago' if key == 'F. Pago' else '' }}">{{ value }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>No hay detalles de cuotas para mostrar.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
 
-    
-    
+    <!-- Productos -->
+    <div class="row mb-4 border-bottom">
+        <div class="col-12">
+            <h4>Productos:</h4>
+            <div class="table-responsive">
+                {% if resultados_productos %}
+                <table class="table table-striped" style="width:100%; text-align:left;">
+                    <thead>
+                        <tr>
+                            {% for key, value in resultados_productos[0].items() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in resultados_productos %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No hay resultados de productos para mostrar.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
+
+    <!-- Detalles de Cuotas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4>Detalles de Cuotas:</h4>
+            <div class="table-responsive">
+                {% if resultados_cuotas %}
+                <table class="table table-striped" style="width:100%; text-align:left;">
+                    <thead>
+                        <tr>
+                            {% for key, value in resultados_cuotas[0].items() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in resultados_cuotas %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No hay detalles de cuotas para mostrar.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
