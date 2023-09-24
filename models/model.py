@@ -1,4 +1,5 @@
 from .Clientes import Cliente
+from .Gastos import Gastos
 # from .CompromisoDePagos import CompromisoDePago
 # from .Cuotas import Cuota
 # from .MediosDePagos import MedioDePago

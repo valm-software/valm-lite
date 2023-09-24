@@ -2,9 +2,87 @@
 
 {% block content %}
 
-<div class="jumbotron text-center">
-    <h1>Bienvenido</h1>
-    <p>consultar_gasto.html!</p>
+<!-- Formulario con Bootstrap en una fila -->
+<div class="container mt-4">
+    <!-- Formulario con Bootstrap en una fila -->
+    <form method="post" action="/menu/gastos/consultar/{{ usuario }}">
+        <div class="form-row">
+            <div class="col">
+                <label for="FechaGastoDesde">Fecha Desde:</label>
+                <input type="text" class="form-control" name="FechaGastoDesde" id="FechaGastoDesde" pattern="\d{4}-\d{2}-\d{2}" placeholder="aaaa-mm-dd">
+            </div>
+            <div class="col">
+                <label for="FechaGastoHasta">Fecha Hasta:</label>
+                <input type="text" class="form-control" name="FechaGastoHasta" id="FechaGastoHasta" pattern="\d{4}-\d{2}-\d{2}" placeholder="aaaa-mm-dd">
+            </div>
+            <div class="col">
+                <label for="NumFactura">Número de Factura:</label>
+                <input type="text" class="form-control" name="NumFactura" id="NumFactura">
+            </div>
+            <div class="col">
+                <label for="Importe">Importe:</label>
+                <input type="number" class="form-control" step="0.01" name="Importe" id="Importe">
+            </div>
+            <div class="col">
+                <label for="NombreUsuario">Nombre de Usuario:</label>
+                <select class="form-control search-select" name="NombreUsuario[]" id="NombreUsuario" multiple="multiple"></select>
+            </div>
+            <!-- Columna centrada para el botón -->
+            <div class="col text-center">
+                <button type="submit" class="btn btn-primary mt-4">Filtrar</button>
+            </div>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <!-- Tabla con margen superior -->
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Fecha de Gasto</th>
+                    <th>Número de Factura</th>
+                    <th>Importe</th>
+                    <th>Nombre de Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gasto in gastos %}
+                <tr>
+                    <td class="fecha-gasto">{{ gasto.FechaGasto }}</td>
+                    <td>{{ gasto.NumFactura }}</td>
+                    <td>{{ "{:,.2f}".format(gasto.Importe).replace(",", "x").replace(".", ",").replace("x", ".") }} $</td>
+                    <td>{{ gasto.usuario.Nombre }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
+<script>
+    
+    $('.search-select').select2({
+    ajax: {
+        url: '/get_usuarios',
+        dataType: 'json',
+        delay: 250,  // Retraso para la búsqueda
+        data: function (params) {
+            return {
+                q: params.term,  // Término de búsqueda
+                page: params.page
+            };
+        },
+        processResults: function (data, params) {
+            params.page = params.page || 1;
+            return {
+                results: data.results,
+                pagination: {
+                    more: (params.page * 30) < data.total_count
+                }
+            };
+        },
+        cache: true
+    },
+    minimumInputLength: 1,  // Mínimo de caracteres para iniciar la búsqueda
+});
+</script>
 {% endblock %}

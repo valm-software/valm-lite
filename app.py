@@ -6,6 +6,9 @@ from functools import wraps
 from database import init_app
 from models.Clientes import db, Cliente
 from models.VentasEncabezados import db, VentaEncabezado
+from models.Gastos import db, Gasto
+from models.Usuarios import db, Usuario
+
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -308,29 +311,58 @@ def consultar_cobro(usuario):
     else:
         return "No tienes permisos para ver esta página."
 
-@app.route('/menu/gastos/crear/<usuario>')
-@login_required
+@app.route('/menu/gastos/crear/<usuario>', methods=['GET', 'POST'])
 def crear_gastos(usuario):
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
-    permisosCrear = usuarios.get(usuario, {}).get('permisos', {}).get('gastos', [])
+    permisosCrear = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
     if 'crear' in permisosCrear:
         return render_template('crear_gastos.html', permisos=permisos, usuario=usuario)
     else:
         return "No tienes permisos para ver esta página."
 
-@app.route('/menu/gastos/consultar/<usuario>')
+
+    
+@app.route('/menu/gastos/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
 def consultar_gastos(usuario):
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
+    
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('gastos', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
-    if 'consultar' in permisosConsultar:
-        return render_template('consultar_gastos.html', permisos=permisos, usuario=usuario)
-    else:
+    
+    if 'consultar' not in permisosConsultar:
         return "No tienes permisos para ver esta página."
+
+    gastos = []  # Lista vacía para inicializar los gastos
+
+    if request.method == 'POST':
+        FechaGastoDesde = request.form.get('FechaGastoDesde')
+        FechaGastoHasta = request.form.get('FechaGastoHasta')
+        NumFactura = request.form.get('NumFactura')
+        Importe = request.form.get('Importe')
+        usuarios_seleccionados = request.form.getlist('NombreUsuario[]')  # Lista de IDs de usuarios seleccionados
+
+        # Iniciamos la consulta
+        query = db.session.query(Gasto)
+
+        # Filtramos la consulta según los datos recibidos
+        if FechaGastoDesde:
+            query = query.filter(Gasto.FechaGasto >= FechaGastoDesde)
+        if FechaGastoHasta:
+            query = query.filter(Gasto.FechaGasto <= FechaGastoHasta)
+        if NumFactura:
+            query = query.filter(Gasto.NumFactura == NumFactura)
+        if Importe:
+            query = query.filter(Gasto.Importe == float(Importe))
+        if usuarios_seleccionados:
+            query = query.filter(Gasto.IdUsuario.in_(usuarios_seleccionados))
+
+        gastos = query.all()
+
+    return render_template('consultar_gastos.html', permisos=permisos, usuario=usuario, gastos=gastos)
 
 
 @app.route('/menu/inicio/<usuario>')
@@ -344,6 +376,22 @@ def inicio_web(usuario):
         return render_template('inicio.html', permisos=permisos, usuario=usuario)
     else:
         return "No tienes permisos para ver esta página."
+
+@app.route('/get_usuarios', methods=['GET'])
+def get_usuarios():
+    # Término de búsqueda
+    search_term = request.args.get('q')
+
+    # Si hay un término de búsqueda, filtramos por ese término
+    if search_term:
+        usuarios = Usuario.query.filter(Usuario.Nombre.like(f"%{search_term}%")).all()
+    else:
+        usuarios = Usuario.query.all()
+
+    # Convertir la lista de usuarios a formato JSON
+    lista_usuarios = [{'id': str(u.Id), 'text': u.Nombre} for u in usuarios]
+    
+    return jsonify(results=lista_usuarios)
 
 if __name__ == '__main__':
    app.run(debug=True, port=8000)
