@@ -1,10 +1,41 @@
 {% include 'menu.html' %}
 
 {% block content %}
+<div class="container mt-4">
+    <h2>Crear Gasto</h2>
+    
+    <form action="{{ url_for('crear_gastos', usuario=usuario) }}" method="post" enctype="multipart/form-data">
+        
+        <div class="form-group">
+            <label for="FechaGasto">Fecha del Gasto:</label>
+            <input type="date" class="form-control" id="FechaGasto" name="FechaGasto" required>
+        </div>
 
-<div class="jumbotron text-center">
-    <h1>Bienvenido</h1>
-    <p>crear_cobro.html!</p>
+        <div class="form-group">
+            <label for="NumFactura">Número de Factura:</label>
+            <input type="text" class="form-control" id="NumFactura" name="NumFactura" required>
+        </div>
+
+        <div class="form-group">
+            <label for="Descripcion">Descripción:</label>
+            <textarea class="form-control" id="Descripcion" name="Descripcion" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="Importe">Importe:</label>
+            <input type="number" class="form-control" id="Importe" name="Importe" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+            <label for="imagen">Imagen relacionada:</label>
+            <input type="file" class="form-control-file" id="imagen" name="imagen" accept="image/*" required>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Guardar Gasto</button>
+        </div>
+    </form>
 </div>
+
 
 {% endblock %}

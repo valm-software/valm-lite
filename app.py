@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
-import mysql.connector
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify,send_from_directory
 from flask_session import Session
 from datetime import timedelta
 from functools import wraps
@@ -8,7 +7,9 @@ from models.Clientes import db, Cliente
 from models.VentasEncabezados import db, VentaEncabezado
 from models.Gastos import db, Gasto
 from models.Usuarios import db, Usuario
-
+from werkzeug.utils import secure_filename
+import os
+from urllib.parse import unquote
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -315,8 +316,34 @@ def consultar_cobro(usuario):
 def crear_gastos(usuario):
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
+
     permisosCrear = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
+
+    if request.method == 'POST':
+        # Recogiendo los datos del formulario
+        FechaGasto = request.form['FechaGasto']
+        NumFactura = request.form['NumFactura']
+        Descripcion = request.form['Descripcion']
+        Importe = request.form['Importe']
+
+        # Tratamiento de la imagen
+        if 'imagen' in request.files:
+            imagen = request.files['imagen']
+            nombre_archivo = secure_filename(imagen.filename)
+            ruta_guardado = os.path.join('Imagenes_gastos', nombre_archivo)
+            imagen.save(ruta_guardado)
+
+            # Crear el registro de gasto en la base de datos
+            try:
+                gasto = Gasto(FechaGasto=FechaGasto, NumFactura=NumFactura, Descripcion=Descripcion, Importe=Importe, Ruta=ruta_guardado)
+                db.session.add(gasto)
+                db.session.commit()
+                return "¡CORRECTO! TODO HA IDO BIEN."
+            except Exception as e:
+                # Aquí podrías registrar el error 'e' en algún log para futuras revisiones
+                return f"Ups... Ha ocurrido el siguiente error: {e}"
+
     if 'crear' in permisosCrear:
         return render_template('crear_gastos.html', permisos=permisos, usuario=usuario)
     else:
@@ -392,6 +419,16 @@ def get_usuarios():
     lista_usuarios = [{'id': str(u.Id), 'text': u.Nombre} for u in usuarios]
     
     return jsonify(results=lista_usuarios)
+
+
+@app.route('/visualizar_archivo/<filename>')
+def visualizar_archivo(filename):
+    return send_from_directory('Imagenes_gastos', filename, as_attachment=False)
+
+@app.route('/descargar_archivo/<filename>')
+def descargar_archivo(filename):
+    return send_from_directory('Imagenes_gastos', filename, as_attachment=True, download_name=filename)
+
 
 if __name__ == '__main__':
    app.run(debug=True, port=8000)

@@ -42,6 +42,7 @@
                     <th>Número de Factura</th>
                     <th>Importe</th>
                     <th>Nombre de Usuario</th>
+                    <th>Documentos</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,6 +52,19 @@
                     <td>{{ gasto.NumFactura }}</td>
                     <td>{{ "{:,.2f}".format(gasto.Importe).replace(",", "x").replace(".", ",").replace("x", ".") }} $</td>
                     <td>{{ gasto.usuario.Nombre }}</td>
+                    <td>
+                        {% if gasto.Ruta %}      
+                        <button class="btn btn-primary" onclick="mostrarArchivo('{{ url_for("visualizar_archivo", filename=gasto.Ruta.split('\\')[-1]) }}')">
+                            <i class="bi bi-eye-fill"></i> Visualizar
+                        </button>
+                        <a href="{{ url_for('descargar_archivo', filename=gasto.Ruta.split('\\')[-1]) }}" download>
+                            <button class="btn btn-success">
+                                <i class="bi bi-cloud-arrow-down-fill"></i> Descarga
+                            </button>
+                        </a>
+                        
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -84,5 +98,33 @@
     },
     minimumInputLength: 1,  // Mínimo de caracteres para iniciar la búsqueda
 });
+</script>
+
+<!-- Modal para visualizar archivo -->
+<div class="modal fade" id="visualizarArchivoModal" tabindex="-1" aria-labelledby="visualizarArchivoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="visualizarArchivoModalLabel">Visualizar Archivo</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+        </button>        
+      </div>
+      <div class="modal-body">
+        <iframe id="iframeArchivo" width="100%" height="500px"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function mostrarArchivo(url) {
+    // Set the iframe's URL to the file you want to view
+    document.getElementById('iframeArchivo').src = url;
+    
+    // Display the modal
+    var modal = new bootstrap.Modal(document.getElementById('visualizarArchivoModal'));
+    modal.show();
+}
 </script>
 {% endblock %}
