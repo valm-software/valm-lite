@@ -7,9 +7,14 @@ from models.Clientes import db, Cliente
 from models.VentasEncabezados import db, VentaEncabezado
 from models.Gastos import db, Gasto
 from models.Usuarios import db, Usuario
+from models.Productos import db, Producto
+from models.VentasDetalles import db, VentaDetalle
+from models.VentasEncabezados import db, VentaEncabezado
+from models.CompromisoDePagos import db, CompromisoDePago
 from werkzeug.utils import secure_filename
 import os
 from urllib.parse import unquote
+from datetime import datetime , time
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -30,6 +35,7 @@ init_app(app)
 # Datos de ejemplo: usuarios y permisos
 usuarios = {
     'victor.lm': {
+        'IdUsuario': 1,
         'password': 'victor.lm',
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
@@ -165,22 +171,94 @@ def cobros(usuario):
         return "No tienes permisos para ver esta página."
 
 # Submenús para crear y consultar tarjetas/clientes
-@app.route('/menu/tarjetas/crear/<usuario>')
+
+
+
+@app.route('/menu/tarjetas/crear/<usuario>', methods=['GET', 'POST'])  # Permitir métodos GET y POST
 @login_required
 def crear_tarjeta(usuario):
+   
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
+    
     permisosCrear = usuarios.get(usuario, {}).get('permisos', {}).get('tarjetas', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
-    if 'crear' in permisosCrear:
-        return render_template('crear_tarjeta.html', permisos=permisos, usuario=usuario)
-    else:
+    
+    if 'crear' not in permisosCrear:
         return "No tienes permisos para ver esta página."
+    
+    id_usuario = usuarios.get(usuario, {}).get('IdUsuario', None)
+    accion = None  # Inicializar la variable antes del bloque if
+    if request.method == 'POST':
+        data = request.get_json()
+
+        print("Datos recibidos:", data)
+        
+        accion = data.get('accion', None)
+        
+        if accion == 'crear_cliente':
+            try:
+                    nuevo_cliente = Cliente(
+                        Nombres=data['Nombres'],
+                        Apellidos=data['Apellidos'],
+                        DNI=data['DNI'],
+                        Telefono1=data['Telefono1'],
+                        Telefono2=data['Telefono2'],
+                        Telefono3=data['Telefono3'],
+                        Direccion=data['Direccion'],
+                        Ubicacion=data['Ubicacion'],
+                        Nota=data['Nota']
+                    )
+                    db.session.add(nuevo_cliente)
+                    db.session.commit()
+                    return jsonify(message="Cliente creado con éxito"), 200  # Respuesta JSON exitosa
+            except Exception as e:
+                db.session.rollback()
+                return jsonify(message=f"Error al crear cliente: {str(e)}"), 400  # Respuesta JSON de error
+        
+        elif accion == 'crear_encabezado':
+            try:
+                nuevo_encabezado = VentaEncabezado(
+                    ImporteVenta=data['ImporteVenta'],
+                    ImporteInicial=data['ImporteInicial'],
+                    NumCuotas=data['NumCuotas'],
+                    IdCompPago = data.get('tipoCompromiso'),
+                    IdCliente = data.get('clienteId'),
+                   # Fventa=data['Fventa'],
+                    NumTarjeta=data['NumTarjeta'],
+                    FProxCuota=data['FProxCuota'],
+                    FVenta=data.get('FVenta'),
+                    IdUsuario=id_usuario  # Suponiendo que tienes un campo para el usuario en VentasEncabezados
+                )
+                db.session.add(nuevo_encabezado)
+                db.session.commit()
+                return jsonify(message="Encabezado creado con éxito", encabezadoId=nuevo_encabezado.Id), 200
+            except Exception as e:
+                db.session.rollback()
+                return jsonify(message=f"Error al crear encabezado: {str(e)}"), 400
+
+        elif accion == 'crear_detalle':
+            try:
+                nuevo_detalle = VentaDetalle(
+                    IdProducto=data['productoId'],  # Suponiendo que tienes un campo para el producto
+                    Cantidad=data['cantidad'],
+                    IdVentaEncabezado=data['encabezadoId']  # ID del encabezado creado anteriormente
+                )
+                db.session.add(nuevo_detalle)
+                db.session.commit()
+                return jsonify(message="Detalle creado con éxito"), 200
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error: {e}") 
+                return jsonify(message=f"Error al crear detalle:  {str(e)}"), 400
+                
+
+    return render_template('crear_tarjeta.html', permisos=permisos, usuario=usuario)
 
 
 
 
-from flask import request, render_template
+
 
 @app.route('/menu/tarjetas/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
@@ -420,6 +498,51 @@ def get_usuarios():
     
     return jsonify(results=lista_usuarios)
 
+@app.route('/get_clientes', methods=['GET'])
+def buscar_clientes():
+    search_term = request.args.get('q')  # Usamos 'q' para coincidir con la configuración de Select2
+    if search_term:
+        # Realizamos una búsqueda en la columna 'Nombres' en la tabla 'Clientes'
+        clientes = Cliente.query.filter(Cliente.Nombres.like(f"%{search_term}%")).all()
+    else:
+        # Si no hay término de búsqueda, podemos devolver una lista vacía o los primeros N clientes
+        clientes = []
+
+    # Convertimos los resultados en el formato necesario para Select2
+    resultados = [{'id': cliente.Id, 'text': f"{cliente.Nombres} {cliente.Apellidos}"} for cliente in clientes]
+
+    # Añadimos una opción para crear un nuevo cliente en caso de que no se encuentre en la lista
+    resultados.append({'id': 'nuevo', 'text': 'Crear nuevo cliente'})
+
+    return jsonify(results=resultados)
+
+@app.route('/get_productos', methods=['GET'])
+def get_productos():
+    search = request.args.get('q', '')  # Obtener el término de búsqueda
+    productos_query = Producto.query.filter(Producto.Nombre.ilike(f"%{search}%")).all()  # Filtrar productos por nombre
+
+    productos = []
+    for producto in productos_query:
+        productos.append({
+            "id": producto.Id,  # Asegúrate de que tu modelo de Producto tenga un atributo 'Id'
+            "text": producto.Nombre  # Asumo que tu modelo de Producto tiene un atributo 'Nombre'
+        })
+
+    return jsonify({"results": productos})
+
+@app.route('/get_tipos_compromiso', methods=['GET'])
+def get_tipos_compromiso():
+    search = request.args.get('q', '')  # Obtener el término de búsqueda
+    tipos_query = CompromisoDePago.query.filter(Producto.Nombre.ilike(f"%{search}%")).all()   # Asumo que tienes un modelo llamado TipoCompromiso
+
+    tipos = []
+    for tipo in tipos_query:
+        tipos.append({
+            "id": tipo.Id,
+            "text": tipo.Nombre  # Asumo que tu modelo tiene un atributo 'nombre'
+        })
+
+    return jsonify({"results": tipos})
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):

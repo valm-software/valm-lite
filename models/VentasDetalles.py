@@ -9,4 +9,4 @@ class VentaDetalle(db.Model):
 
     # Definir las relaciones con otras tablas
     venta_encabezado = db.relationship('VentaEncabezado', backref='detalle_venta', lazy=True)
-    producto = db.relationship('Producto', backref='ventas_detalles', lazy=True)
+    producto = db.relationship("Producto", back_populates="ventas_detalles")

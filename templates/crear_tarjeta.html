@@ -1,8 +1,332 @@
 {% include 'menu.html' %}
 
 {% block content %}
-<div class="jumbotron text-center">
-    <h1>Bienvenido</h1>
-    <p>crear_tarjeta.html!</p>
-</div>
+<input type="hidden" id="usuarioConectado" value="{{ usuario }}">
+
+<div class="container mt-4">
+  <!-- Módulo 1: Buscador de Cliente -->
+  <div class="card mb-4">
+    <div class="card-header"><strong>Buscador de Cliente</strong></div>
+    <div class="card-body">
+      <div class="form-group">
+        <label for="cliente">Buscar Cliente:</label>
+        <select class="form-control" id="cliente" style="width: 100%;">
+          <!-- Opciones se llenarán dinámicamente -->
+        </select>
+      </div>
+      
+      <!-- Acordeón para Nuevo Cliente -->
+      <div class="accordion mb-4" id="accordionNuevoCliente">
+        <div class="card">
+          <div class="card-header" id="headingNuevoCliente">
+            <h2 class="mb-0">
+              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseNuevoCliente" aria-expanded="true" aria-controls="collapseNuevoCliente">
+                Nuevo Cliente
+              </button>
+            </h2>
+          </div>
+
+          <div id="collapseNuevoCliente" class="collapse" aria-labelledby="headingNuevoCliente" data-parent="#accordionNuevoCliente">
+            <div class="card-body">
+              <form id="formNuevoCliente" class="form-horizontal">
+                <div class="row">
+                  <!-- Columna 1 -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="Nombres">Nombres</label>
+                      <input type="text" class="form-control" id="Nombres" name="Nombres" placeholder="Nombres" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="Telefono1">Teléfono 1</label>
+                      <input type="text" class="form-control" id="Telefono1" name="Telefono1" placeholder="Telefono1" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="Telefono3">Teléfono 3</label>
+                      <input type="text" class="form-control" id="Telefono3" name="Telefono3" placeholder="Telefono3">
+                    </div>
+                    <div class="form-group">
+                      <label for="Ubicacion">Ubicación</label>
+                      <input type="text" class="form-control" id="Ubicacion" name="Ubicacion" placeholder="Ubicacion">
+                    </div>
+                  </div>
+                  <!-- Columna 2 -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="Apellidos">Apellidos</label>
+                      <input type="text" class="form-control" id="Apellidos" name="Apellidos" placeholder="Apellidos" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="DNI">DNI</label>
+                      <input type="text" class="form-control" id="DNI" name="DNI" placeholder="DNI" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="Telefono2">Teléfono 2</label>
+                      <input type="text" class="form-control" id="Telefono2" name="Telefono2" placeholder="Telefono2">
+                    </div>
+                    <div class="form-group">
+                      <label for="Direccion">Dirección</label>
+                      <input type="text" class="form-control" id="Direccion" name="Direccion" placeholder="Direccion" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="Nota">Nota</label>
+                      <input type="text" class="form-control" id="Nota" name="Nota" placeholder="Nota">
+                    </div>
+                  </div>
+                </div>
+                <button type="button" id="crearClienteBtn" class="btn btn-primary">Crear Cliente</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- Módulo 2: Productos -->
+    <div class="card mb-4">
+      <div class="card-header"><strong>Productos</strong></div>
+      <div class="card-body">
+        <!-- Aquí va el contenido del segundo módulo -->
+        <div class="form-group">
+          <label for="producto">Buscar Producto:</label>
+          <select class="form-control" id="producto" style="width: 100%;">
+            <!-- Opciones se llenarán dinámicamente -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cantidad">Cantidad:</label>
+          <input type="number" class="form-control" id="cantidad" required>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Módulo 3: Detalles de la Tarjeta -->
+    <div class="card mb-4">
+      <div class="card-header"><strong>Detalles de la Tarjeta</strong></div>
+      <div class="card-body">
+        <form id="formDetallesTarjeta" class="form-row">
+          <div class="form-group col-md-2">
+            <label for="ImporteVenta">Importe Venta</label>
+            <input type="number" class="form-control" id="ImporteVenta" name="ImporteVenta" required>
+            <small id="formattedImporteVenta"></small>
+          </div>
+          <div class="form-group col-md-2">
+            <label for="ImporteInicial">Importe Inicial</label>
+            <input type="number" class="form-control" id="ImporteInicial" name="ImporteInicial" required>
+            <small id="formattedImporteInicial"></small>
+          </div>
+          <div class="form-group col-md-2">
+            <label for="NumCuotas">Núm. Cuotas</label>
+            <input type="number" class="form-control" id="NumCuotas" name="NumCuotas" required>
+          </div>
+          <div class="form-group col-md-2">
+            <label for="NumTarjeta">Núm. Tarjeta</label>
+            <input type="text" class="form-control" id="NumTarjeta" name="NumTarjeta" required>
+          </div>
+          <div class="form-group">
+            <label for="FProxCuota">Fecha de Próxima Cuota:</label>
+            <input type="text" id="FProxCuota" name="FProxCuota" class="form-control" placeholder="Seleccione Fecha" required>
+          </div>
+          <div class="form-group">
+            <label for="FVenta">Fecha de Venta:</label>
+            <input type="text" id="FVenta" name="FVenta" class="form-control" placeholder="Seleccione Fecha y Hora" required>
+          </div>
+          <div class="form-group col-md-2">
+            <label for="tipoCompromiso">Tipo Compromiso</label>
+            <select class="form-control" id="tipoCompromiso" name="tipoCompromiso" required>
+              <!-- Opciones se llenarán dinámicamente -->
+            </select>
+          </div>
+        </form>
+        <button type="button" id="crearTarjetaTotalBtn" class="btn btn-primary mt-3">Crear Tarjeta</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+
+function formatCurrency(amount) {
+  return "$" + parseFloat(amount).toLocaleString("en-US", {style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+$("#ImporteVenta, #ImporteInicial").on("input", function() {
+  var id = $(this).attr('id');
+  var value = $(this).val();
+  var formattedValue = formatCurrency(value);
+  $("#formatted" + id).text(formattedValue);
+});
+
+function resetFormFields() {
+    // Restablecer campos de texto y número
+    $('input[type="text"], input[type="number"]').val('');
+    $("#formattedImporteVenta").text("");
+    $("#formattedImporteInicial").text("");
+    
+    // Restablecer desplegables Select2
+    $('#cliente').val(null).trigger('change');
+    $('#producto').val(null).trigger('change');
+    $('#tipoCompromiso').val(null).trigger('change');
+    
+    // Ocultar el acordeón de nuevo cliente
+    $('#collapseNuevoCliente').collapse('hide');
+}
+
+$(document).ready(function() {
+  flatpickr("#FVenta", {
+  enableTime: true,
+  dateFormat: "Y-m-d H:i:S"
+});
+flatpickr("#FProxCuota", {
+  enableTime: false,  // Solo fecha, sin tiempo
+  dateFormat: "Y-m-d"  // Formato de fecha
+});
+    // Inicializar Select2 para clientes
+    $('#cliente').select2({
+        ajax: {
+            url: '/get_clientes',  // Ruta del backend que devuelve los clientes
+            dataType: 'json'
+        }
+    });
+    // Escuchar cambios en el desplegable de clientes
+    $('#cliente').on('change', function() {
+        const selectedValue = $(this).val();
+        
+        // Si el valor seleccionado es 'nuevo', desplegar el acordeón
+        if (selectedValue === 'nuevo') {
+            $('#collapseNuevoCliente').collapse('show');
+        } else {
+            $('#collapseNuevoCliente').collapse('hide');
+        }
+    });
+
+    // Inicializar Select2 para productos
+    $('#producto').select2({
+        ajax: {
+            url: '/get_productos',  // Ruta del backend que devuelve los productos
+            dataType: 'json'
+        }
+    });
+ // Inicializar Select2 para TipoCompromisos
+    $('#tipoCompromiso').select2({
+    ajax: {
+        url: '/get_tipos_compromiso',  // Ruta del backend que devuelve los tipos de compromiso
+        dataType: 'json'
+         }
+    });
+    // Mostrar campos para nuevo cliente si no se encuentra en la búsqueda
+    $('#cliente').on('select2:select', function (e) {
+        var data = e.params.data;
+        if(data.id === 'nuevo') {
+            $('#nuevoCliente').show();
+        } else {
+            $('#nuevoCliente').hide();
+        }
+    });
+
+    // Obtener el usuario conectado desde el campo oculto
+    var usuarioConectado = $('#usuarioConectado').val();
+
+    // Manejar el clic en el botón para crear un nuevo cliente
+    $('#crearClienteBtn').click(function(e) {
+        e.preventDefault();  // Evitar que el formulario se envíe automáticamente
+        var formData = $('#formNuevoCliente').serializeArray().reduce(function(obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        formData['accion'] = 'crear_cliente';
+
+        // Construir la URL dinámicamente con el usuario conectado
+        var urlDinamica = '/menu/tarjetas/crear/' + usuarioConectado;
+
+        // Hacer la petición POST para crear el cliente
+        $.ajax({
+            url: urlDinamica,  // Usar la URL dinámica
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.message) {
+                    alert(response.message);
+                    resetFormFields();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error, status, xhr.responseText);
+            }
+        });
+    });
+
+    // Manejar el clic en el botón para crear una nueva tarjeta
+    $('#crearTarjetaTotalBtn').click(function(e) {
+        e.preventDefault();
+        var clienteId = $('#cliente').val();
+        var productoId = $('#producto').val();
+        var cantidad = $('#cantidad').val();
+        var tipoCompromiso = $('#tipoCompromiso').val();
+
+        if(!clienteId) {
+            alert("Por favor, seleccione un cliente.");
+            return;
+        }
+
+        if(!productoId) {
+        alert("Por favor, seleccione un producto.");
+        return;
+        }
+
+        if(!cantidad) {
+        alert("Por favor, establezca una cantidad.");
+        return;
+        }
+
+        if(!tipoCompromiso) {
+            alert("Por favor, seleccione un tipo de compromiso.");
+            return;
+        }
+        console.log("Cliente ID: ", clienteId);
+        console.log("Producto ID: ", productoId);
+        console.log("cantidad: ", cantidad);
+        console.log("tipoCompromiso: ", tipoCompromiso);
+
+        var formDataTarjeta = $('#formDetallesTarjeta').serializeArray().reduce(function(obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        formDataTarjeta['accion'] = 'crear_encabezado';
+        formDataTarjeta['clienteId'] = clienteId;
+        formDataTarjeta['Cantidad'] = cantidad;
+        formDataTarjeta['tipoCompromiso'] = tipoCompromiso;
+
+
+        $.ajax({
+            url: '/menu/tarjetas/crear/' + usuarioConectado,
+            type: 'POST',
+            data: JSON.stringify(formDataTarjeta),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.message && response.encabezadoId) {
+                    var encabezadoId = response.encabezadoId;
+                    $.ajax({
+                        url: '/menu/tarjetas/crear/' + usuarioConectado,
+                        type: 'POST',
+                        data: JSON.stringify({ accion: 'crear_detalle', encabezadoId: encabezadoId, productoId: productoId , cantidad: cantidad}),
+                        contentType: 'application/json',
+                        success: function(response) {
+                            if (response.message) {
+                                alert("Tarjeta y detalles creados con éxito.");
+                                resetFormFields();
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error, status, xhr.responseText);
+                        }
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error, status, xhr.responseText);
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}

@@ -15,4 +15,4 @@ class Producto(db.Model):
     FechaRegistro = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     # Definir la relación uno a muchos con VentasDetalles
-    ventas_detalles = db.relationship('VentaDetalle', backref='producto', lazy=True)
+    ventas_detalles = db.relationship("VentaDetalle", back_populates="producto")
