@@ -11,6 +11,9 @@ from models.Productos import db, Producto
 from models.VentasDetalles import db, VentaDetalle
 from models.VentasEncabezados import db, VentaEncabezado
 from models.CompromisoDePagos import db, CompromisoDePago
+from models.MediosDePagos import db, MedioDePago
+from models.Cuotas import db, Cuota
+from models.Usuarios import db, Usuario
 from werkzeug.utils import secure_filename
 import os
 from urllib.parse import unquote
@@ -366,17 +369,60 @@ def consultar_cliente(usuario):
 
 
 
-@app.route('/menu/cobros/crear/<usuario>')
+@app.route('/menu/cobros/crear/<usuario>', methods=['GET', 'POST'])
 @login_required
 def crear_cobro(usuario):
+    id_usuario = usuarios.get(usuario, {}).get('IdUsuario', None)
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
     permisosCrear = usuarios.get(usuario, {}).get('permisos', {}).get('cobros', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
-    if 'crear' in permisosCrear:
-        return render_template('crear_cobro.html', permisos=permisos, usuario=usuario)
-    else:
+    
+    if 'crear' not in permisosCrear:
         return "No tienes permisos para ver esta página."
+
+    if request.method == 'GET':
+        return render_template('crear_cobro.html', permisos=permisos, usuario=usuario)
+
+    elif request.method == 'POST':
+        try:
+            # Obtener datos desde el cliente
+            medioPago = int(request.form['medioPago'])
+            fechaPago = request.form['fechaPago']
+            numCuota = int(request.form['numCuota'])
+            abono = float(request.form['abono'])
+            calculo = float(request.form['calculo'])
+            IdVentaEncabezado = int(request.form['IdVentaEncabezado'])
+            fechaproxpago = request.form['fechaproxpago']  # Asumiendo que es un entero
+            venta_encabezado = VentaEncabezado.query.get(IdVentaEncabezado)
+            if venta_encabezado:
+                venta_encabezado.FProxCuota = fechaproxpago  # Actualiza el campo
+                db.session.commit()  # Guarda los cambios
+            else:
+                return jsonify({'message': 'IdVentaEncabezado no encontrado'}), 404
+            
+            # Crear el objeto Cuota (Cobro en tu caso)
+            nueva_cuota = Cuota(
+                IdMedioDePago=medioPago,
+                FechaPago=fechaPago,
+                NumCuota=numCuota,
+                Abono=abono,
+                IdUsuario=id_usuario,
+                Saldo=calculo,
+                IdVentaEncabezado=IdVentaEncabezado  # Asumiendo que tienes un campo para esto
+            )
+            
+            # Añadir y confirmar
+            db.session.add(nueva_cuota)
+            db.session.commit()
+
+            return jsonify({'message': 'Cobro creado con éxito'}), 200
+
+        except Exception as e:
+            db.session.rollback()  # Deshacer los cambios en caso de error
+            app.logger.error(f"Error desconocido: {str(e)}")
+            return jsonify({'message': f'Error al crear el cobro: {str(e)}'}), 500
+
 
 @app.route('/menu/cobros/consultar/<usuario>')
 @login_required
@@ -543,6 +589,93 @@ def get_tipos_compromiso():
         })
 
     return jsonify({"results": tipos})
+
+@app.route('/get_calculo/<int:IdVentaEncabezado>', methods=['GET'])
+def get_calculo(IdVentaEncabezado):
+    try:
+        venta_encabezado = VentaEncabezado.query.get(IdVentaEncabezado)
+        if not venta_encabezado:
+            return jsonify({'message': 'Venta Encabezado no encontrada'}), 404
+
+        importe_venta = venta_encabezado.ImporteVenta
+        importe_inicial = venta_encabezado.ImporteInicial
+
+        cuotas = Cuota.query.filter_by(IdVentaEncabezado=IdVentaEncabezado).all()
+        suma_abonos = sum(cuota.Abono for cuota in cuotas)
+
+        calculo = importe_venta - importe_inicial - suma_abonos
+
+        return jsonify({'calculo': calculo}), 200
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
+
+@app.route('/get_tarjeta/<numero_tarjeta>', methods=['GET'])
+def get_tarjeta(numero_tarjeta):
+    try:
+        encabezado = VentaEncabezado.query.filter_by(NumTarjeta=numero_tarjeta).first()
+        if encabezado:
+            cuotas = Cuota.query.filter_by(IdVentaEncabezado=encabezado.Id).all()
+            cuotas_dict = [c.to_dict() for c in cuotas]  # Asumiendo que tienes un método to_dict en el modelo
+            return jsonify({'encabezado': encabezado.to_dict(), 'cuotas': cuotas_dict}), 200
+        else:
+            return jsonify({'message': 'Tarjeta no encontrada'}), 404
+    except db.SQLAlchemyError as e:
+        app.logger.error(f"Error al acceder a la base de datos: {str(e)}")
+        return jsonify({'message': 'Error en el servidor'}), 500
+    except Exception as e:
+        app.logger.error(f"Error desconocido: {str(e)}")
+        return jsonify({'message': 'Error en el servidor'}), 500
+
+@app.route('/get_medios_pago', methods=['GET'])
+def get_medios_pago():
+    try:
+        medios = MedioDePago.query.all()
+        medios_dict = [m.to_dict() for m in medios]
+        return jsonify({'medios': medios_dict}), 200
+    except Exception as e:
+        app.logger.error(f"Error desconocido: {str(e)}")
+        return jsonify({'message': 'Error en el servidor'}), 500
+
+
+@app.route('/sumar_abonos/<int:id_venta_encabezado>', methods=['GET'])
+def sumar_abonos(id_venta_encabezado):
+    try:
+        total_abonos = db.session.query(db.func.sum(Cuota.Abono)).filter(Cuota.IdVentaEncabezado == id_venta_encabezado).scalar()
+        total_abonos = total_abonos if total_abonos else 0  # En caso de que no haya abonos, el total será 0
+        return jsonify({'total_abonos': total_abonos}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get_prod_tarjeta/<numero_tarjeta>', methods=['GET'])
+def get_prod_tarjeta(numero_tarjeta):
+    try:
+        # Ejecutar el procedimiento almacenado getTarjetaEncabezado
+        cursor_encabezado = db.session.connection().connection.cursor()
+        cursor_encabezado.callproc('getTarjetaEncabezado', [numero_tarjeta])
+        resultados_encabezado = [dict(zip([column[0] for column in cursor_encabezado.description], row)) for row in cursor_encabezado.fetchall()]
+        cursor_encabezado.close()
+
+        # Ejecutar el procedimiento almacenado getTarjetaProductos
+        cursor_productos = db.session.connection().connection.cursor()
+        cursor_productos.callproc('getTarjetaProductos', [numero_tarjeta])
+        resultados_productos = [dict(zip([column[0] for column in cursor_productos.description], row)) for row in cursor_productos.fetchall()]
+        cursor_productos.close()
+
+        # Confirmar los cambios (en caso de que los procedimientos hayan modificado la base de datos)
+        db.session.commit()
+
+        return jsonify({
+            'encabezado': resultados_encabezado,
+            'productos': resultados_productos,
+        }), 200
+    except db.SQLAlchemyError as e:
+        app.logger.error(f"Error al acceder a la base de datos: {str(e)}")
+        return jsonify({'message': 'Error en el servidor'}), 500
+    except Exception as e:
+        app.logger.error(f"Error desconocido: {str(e)}")
+        return jsonify({'message': 'Error en el servidor'}), 500
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):

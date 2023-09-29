@@ -18,3 +18,19 @@ class VentaEncabezado(db.Model):
     # # Definir las relaciones con otras tablas
     # cliente = db.relationship('Cliente', backref='ventas', lazy=False)
     # compromiso = db.relationship('CompromisoDePago', backref='ventas', lazy=True)
+    cuotas = db.relationship('Cuota', backref='venta_encabezado', lazy=True)
+    def to_dict(self):
+        return {
+            'Id': self.Id,
+            'IdCliente': self.IdCliente,
+            'ImporteVenta': self.ImporteVenta,
+            'ImporteInicial': self.ImporteInicial,
+            'NumCuotas': self.NumCuotas,
+            'ImporteCuota': self.ImporteCuota,
+            'FVenta': self.FVenta,
+            'FProxCuota': self.FProxCuota,
+            'NumTarjeta': self.NumTarjeta,
+            'IdCompPago': self.IdCompPago,
+            'IdUsuario': self.IdUsuario,
+            'Cerrado': self.Cerrado
+        }

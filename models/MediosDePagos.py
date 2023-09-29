@@ -7,4 +7,11 @@ class MedioDePago(db.Model):
     Descripcion = db.Column(db.Text)
 
     # Definir la relación uno a muchos con Cuotas
-    cuotas = db.relationship('Cuota', backref='medio_de_pago', lazy=True)
+    cuotas = db.relationship('Cuota', back_populates='medio_de_pago', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'Id': self.Id,
+            'Nombre': self.Nombre,
+            'Descripcion': self.Descripcion
+        }

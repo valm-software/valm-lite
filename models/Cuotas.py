@@ -14,6 +14,24 @@ class Cuota(db.Model):
     FechaLiquidacion = db.Column(db.DateTime)
 
     # Definir las relaciones con otras tablas
-    venta_encabezado = db.relationship('VentaEncabezado', backref='cuotas', lazy=True)
-    medio_de_pago = db.relationship('MedioDePago', backref='cuotas', lazy=True)
-    usuario = db.relationship('Usuario', backref='cuotas', lazy=True)
+    IdVentaEncabezado = db.Column(db.Integer, db.ForeignKey('VentasEncabezados.Id'), nullable=False)
+    IdMedioDePago = db.Column(db.Integer, db.ForeignKey('MediosDePagos.Id'), nullable=False)
+    medio_de_pago = db.relationship('MedioDePago', back_populates='cuotas')
+    IdUsuario = db.Column(db.Integer, db.ForeignKey('Usuarios.Id'), nullable=False)
+    def to_dict(self):
+        abono_formatted = "${:,.2f}".format(self.Abono)
+        saldo_formatted = "${:,.2f}".format(self.Saldo)
+        liquidado_formatted = 'Sí' if self.Liquidado == 1 else 'No'
+        return {
+            'Id': self.Id,
+            'cobrador': self.usuario.Nombre if self.usuario else 'Desconocido',
+            'IdVentaEncabezado': self.IdVentaEncabezado,
+            'IdMedioDePago': self.IdMedioDePago,
+            'IdUsuario': self.IdUsuario,
+            'FechaPago': self.FechaPago.strftime('%Y-%m-%d') if self.FechaPago else None,
+            'NumCuota': self.NumCuota,
+            'Abono': abono_formatted,
+            'Saldo': saldo_formatted,
+            'Liquidado': liquidado_formatted,
+            'FechaLiquidacion': self.FechaLiquidacion
+        }
