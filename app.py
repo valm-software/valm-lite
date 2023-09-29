@@ -24,6 +24,7 @@ app.secret_key = 'tu_clave_secreta'
 
 # Configurar la sesión para que caduque después de 2 horas de inactividad
 app.config['SESSION_TYPE'] = 'filesystem'
+#app.config['SESSION_FILE_DIR'] = '/home/soporte/valm-lite/flask-session'
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_USE_SIGNER'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
@@ -689,3 +690,5 @@ def descargar_archivo(filename):
 if __name__ == '__main__':
    app.run(debug=True, port=8000)
 
+# if __name__ == '__main__':
+#     app.run()
