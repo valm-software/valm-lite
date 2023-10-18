@@ -680,6 +680,22 @@ def get_prod_tarjeta(numero_tarjeta):
     except Exception as e:
         app.logger.error(f"Error desconocido: {str(e)}")
         return jsonify({'message': 'Error en el servidor'}), 500
+    
+@app.route('/verificar_tarjeta/<numero_tarjeta>', methods=['GET'])
+def verificar_tarjeta(numero_tarjeta):
+    try:
+        # Realiza la lógica de verificación de la tarjeta en la base de datos.
+        venta_encabezado = VentaEncabezado.query.filter_by(NumTarjeta=numero_tarjeta).first()
+
+        if venta_encabezado:
+            resultado = {"ID": 1, "Mensaje": "La tarjeta existe en la BBDD"}
+        else:
+            resultado = {"ID": 0, "Mensaje": "La tarjeta no existe en la BBDD)"}
+
+        return jsonify(resultado)
+
+    except Exception as e:
+        return jsonify({"ID": 0, "Mensaje": str(e)}), 500  # Devuelve un mensaje de error en formato JSON
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):

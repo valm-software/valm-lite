@@ -11,6 +11,7 @@
       <div class="form-group">
         <label for="cliente">Buscar Cliente:</label>
         <select class="form-control" id="cliente" style="width: 100%;">
+          <option value="1" selected>CLIENTE GENERICO</option>
           <!-- Opciones se llenarán dinámicamente -->
         </select>
       </div>
@@ -87,12 +88,13 @@
         <div class="form-group">
           <label for="producto">Buscar Producto:</label>
           <select class="form-control" id="producto" style="width: 100%;">
+            <option value="47" selected>Generico</option>
             <!-- Opciones se llenarán dinámicamente -->
           </select>
         </div>
         <div class="form-group">
           <label for="cantidad">Cantidad:</label>
-          <input type="number" class="form-control" id="cantidad" required>
+          <input type="number" class="form-control" id="cantidad" value="1" required>
         </div>
       </div>
     </div>
@@ -114,7 +116,7 @@
           </div>
           <div class="form-group col-md-2">
             <label for="NumCuotas">Núm. Cuotas</label>
-            <input type="number" class="form-control" id="NumCuotas" name="NumCuotas" required>
+            <input type="number" class="form-control" id="NumCuotas" name="NumCuotas" value="6" required>
           </div>
           <div class="form-group col-md-2">
             <label for="NumTarjeta">Núm. Tarjeta</label>
@@ -131,6 +133,7 @@
           <div class="form-group col-md-2">
             <label for="tipoCompromiso">Tipo Compromiso</label>
             <select class="form-control" id="tipoCompromiso" name="tipoCompromiso" required>
+              <option value="3" selected>MENSUAL</option>
               <!-- Opciones se llenarán dinámicamente -->
             </select>
           </div>
@@ -138,7 +141,47 @@
         <button type="button" id="crearTarjetaTotalBtn" class="btn btn-primary mt-3">Crear Tarjeta</button>
       </div>
     </div>
+
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="successModalLabel">Éxito</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            La tarjeta se ha creado correctamente con el ID: <span id="encabezadoId"></span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div class="modal fade" id="errorModalT" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="errorModalLabel">Éxito</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          La tarjeta con el numero <span id="NumTarjetaT"></span> ya existe en la BBDD.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 
@@ -156,14 +199,20 @@ $("#ImporteVenta, #ImporteInicial").on("input", function() {
 
 function resetFormFields() {
     // Restablecer campos de texto y número
-    $('input[type="text"], input[type="number"]').val('');
+    //$('input[type="text"], input[type="number"]').val('');
     $("#formattedImporteVenta").text("");
     $("#formattedImporteInicial").text("");
-    
+    $("#ImporteVenta").val('');
+    $("#ImporteInicial").val('');
+    $("#cantidad").val('1');
+    $("#NumCuotas").val('6');
+    $("#NumTarjeta").val('');
+    $("#FVenta").val('');
+    $("#FProxCuota").val('');
     // Restablecer desplegables Select2
-    $('#cliente').val(null).trigger('change');
-    $('#producto').val(null).trigger('change');
-    $('#tipoCompromiso').val(null).trigger('change');
+    //$('#cliente').val(null).trigger('change');
+    //$('#producto').val(null).trigger('change');
+    //$('#tipoCompromiso').val(null).trigger('change');
     
     // Ocultar el acordeón de nuevo cliente
     $('#collapseNuevoCliente').collapse('hide');
@@ -205,12 +254,20 @@ flatpickr("#FProxCuota", {
         }
     });
  // Inicializar Select2 para TipoCompromisos
-    $('#tipoCompromiso').select2({
-    ajax: {
-        url: '/get_tipos_compromiso',  // Ruta del backend que devuelve los tipos de compromiso
-        dataType: 'json'
-         }
-    });
+ $('#tipoCompromiso').select2({
+                ajax: {
+                    url: '/get_tipos_compromiso',
+                    dataType: 'json',
+                    processResults: function (data) {
+                        return {
+                            results: data.results
+                        };
+                    }
+                }
+            });
+
+            // Establecer "MENSUAL" como valor por defecto
+            $('#tipoCompromiso').val(3).trigger('change');
     // Mostrar campos para nuevo cliente si no se encuentra en la búsqueda
     $('#cliente').on('select2:select', function (e) {
         var data = e.params.data;
@@ -261,6 +318,7 @@ flatpickr("#FProxCuota", {
         var productoId = $('#producto').val();
         var cantidad = $('#cantidad').val();
         var tipoCompromiso = $('#tipoCompromiso').val();
+        var NumTarjeta = $('#NumTarjeta').val();
 
         if(!clienteId) {
             alert("Por favor, seleccione un cliente.");
@@ -285,8 +343,31 @@ flatpickr("#FProxCuota", {
         console.log("Producto ID: ", productoId);
         console.log("cantidad: ", cantidad);
         console.log("tipoCompromiso: ", tipoCompromiso);
+        console.log("NumTarjeta: ", NumTarjeta);
 
-        var formDataTarjeta = $('#formDetallesTarjeta').serializeArray().reduce(function(obj, item) {
+        $.ajax({
+            url: '/verificar_tarjeta/' + NumTarjeta,
+            type: 'GET',
+            success: function(response) {
+                if (response.ID === 1) {
+                    // La tarjeta existe, ahora puedes continuar con la creación
+                    console.log("La tarjeta existe en la base de datos. Mostrar el modal.");
+                    $('#NumTarjetaT').text(NumTarjeta);
+                    $('#errorModalT').modal('show');
+                    
+                } else {
+                    // La tarjeta no existe, mostrar un modal de error
+                    console.log("La tarjeta no existe en la base de datos. Continuar con el proceso.");
+                    createTarjeta(clienteId, productoId, cantidad, tipoCompromiso);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error, status, xhr.responseText);
+            }
+        });
+
+        function createTarjeta(clienteId, productoId, cantidad, tipoCompromiso) {
+          var formDataTarjeta = $('#formDetallesTarjeta').serializeArray().reduce(function(obj, item) {
             obj[item.name] = item.value;
             return obj;
         }, {});
@@ -304,6 +385,11 @@ flatpickr("#FProxCuota", {
             success: function(response) {
                 if (response.message && response.encabezadoId) {
                     var encabezadoId = response.encabezadoId;
+                      // Muestra el ID en el modal
+                      $('#encabezadoId').text(encabezadoId);
+                              
+                      // Muestra el modal
+                      $('#successModal').modal('show');
                     $.ajax({
                         url: '/menu/tarjetas/crear/' + usuarioConectado,
                         type: 'POST',
@@ -311,7 +397,7 @@ flatpickr("#FProxCuota", {
                         contentType: 'application/json',
                         success: function(response) {
                             if (response.message) {
-                                alert("Tarjeta y detalles creados con éxito.");
+                                //alert("Tarjeta y detalles creados con éxito.");
                                 resetFormFields();
                             }
                         },
@@ -325,6 +411,7 @@ flatpickr("#FProxCuota", {
                 console.error('Error:', error, status, xhr.responseText);
             }
         });
+    }
     });
 });
 </script>
