@@ -49,34 +49,27 @@ usuarios = {
             'inicio': ['crear', 'consultar']
         }
     },
-    'adrian.ad': {
-        'password': 'adrian.ad',
-        'permisos': {
-            'tarjetas': ['crear', 'consultar'],
-            'clientes': ['crear', 'consultar'],
-            'cobros': ['crear', 'consultar']
-        }
-    },    
     'fray.lm': {
+        'IdUsuario': 2,
         'password': 'fray.lm',
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
-            'clientes': ['crear'],
-            'cobros': ['crear', 'consultar']
+            'clientes': ['crear', 'consultar'],
+            'cobros': ['crear', 'consultar'],
+            'gastos': ['crear', 'consultar'],
+            'inicio': ['crear', 'consultar']
         }
     },
     'parra.pa': {
+        'IdUsuario': 3,
         'password': 'parra.pa',
         'permisos': {
-            'tarjetas': [],
-            'clientes': ['consultar'],
-            'cobros': ['crear', 'consultar']
+            'tarjetas': ['crear', 'consultar'],
+            'clientes': ['crear', 'consultar'],
+            'cobros': ['crear', 'consultar'],
+            'gastos': ['crear', 'consultar'],
+            'inicio': ['crear', 'consultar']
         }
-    },
-  
-    'auxiliar.au': {
-        'password': 'auxiliar123',
-        'permisos': {}
     }
 }
 
