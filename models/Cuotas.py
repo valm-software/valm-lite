@@ -10,7 +10,7 @@ class Cuota(db.Model):
     NumCuota = db.Column(db.Integer)
     Abono = db.Column(db.Numeric(10, 2))
     Saldo = db.Column(db.Numeric(10, 2))
-    Liquidado = db.Column(db.Boolean)
+    Liquidado = db.Column(db.Integer)
     FechaLiquidacion = db.Column(db.DateTime)
 
     # Definir las relaciones con otras tablas

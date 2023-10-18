@@ -392,6 +392,7 @@ def crear_cobro(usuario):
             fechaPago = request.form['fechaPago']
             numCuota = int(request.form['numCuota'])
             abono = float(request.form['abono'])
+            liquidado = int(request.form['liquidado'])
             calculo = float(request.form['calculo'])
             IdVentaEncabezado = int(request.form['IdVentaEncabezado'])
             fechaproxpago = request.form['fechaproxpago']  # Asumiendo que es un entero
@@ -408,6 +409,7 @@ def crear_cobro(usuario):
                 FechaPago=fechaPago,
                 NumCuota=numCuota,
                 Abono=abono,
+                Liquidado = liquidado,
                 IdUsuario=id_usuario,
                 Saldo=calculo,
                 IdVentaEncabezado=IdVentaEncabezado  # Asumiendo que tienes un campo para esto
@@ -615,6 +617,7 @@ def get_calculo(IdVentaEncabezado):
 @app.route('/get_tarjeta/<numero_tarjeta>', methods=['GET'])
 def get_tarjeta(numero_tarjeta):
     try:
+        print('test1');
         encabezado = VentaEncabezado.query.filter_by(NumTarjeta=numero_tarjeta).first()
         if encabezado:
             cuotas = Cuota.query.filter_by(IdVentaEncabezado=encabezado.Id).all()
