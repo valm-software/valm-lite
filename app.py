@@ -225,6 +225,9 @@ def crear_tarjeta(usuario):
                     NumTarjeta=data['NumTarjeta'],
                     FProxCuota=data['FProxCuota'],
                     FVenta=data.get('FVenta'),
+                    Ciudad=data['Ciudad'],
+                    Responsable=data['Responsable'],
+                    Comentario=data['Comentario'],
                     IdUsuario=id_usuario  # Suponiendo que tienes un campo para el usuario en VentasEncabezados
                 )
                 db.session.add(nuevo_encabezado)

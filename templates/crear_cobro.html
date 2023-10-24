@@ -22,6 +22,7 @@
                             <p><strong>Nº Fac:</strong> <span id="nfac"></span></p>
                             <p><strong>F. Venta:</strong> <span id="fventa"></span></p>
                             <p><strong>Vendedor:</strong> <span id="Vendedor"></span></p>
+                            <p><strong>Responsable:</strong> <span id="Responsable"></span></p>                            
                             <p><strong>Periosidad de cobro:</strong> <span id="periosidaddecobro"></span></p>
                             <p><strong>Cerrado:</strong> <span id="Cerrado"></span></p>
                         </div>
@@ -36,6 +37,7 @@
                             <p><strong>DNI:</strong> <span id="dni"></span></p>
                             <p><strong>Telefono:</strong> <span id="telefono"></span></p>
                             <p><strong>Direccion:</strong> <span id="direccion"></span></p>
+                            <p><strong>Ciudad:</strong> <span id="ciudad"></span></p>
                         </div>
                     </div>
                 </div>
@@ -53,6 +55,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="col-12">    
+            <p><strong>Comentario:</strong> <span id="comentario"></span></p>
         </div>
     </div>
 
@@ -192,6 +198,9 @@
                             $('#impcuotaspagadas').text(encabezado['Imp Cuotas Pagadas']);
                             $('#ncuotaspagadas').text(encabezado['Nº Cuotas Pagadas']);
                             $('#fproximacuota').text(fechaFormateada);
+                            $('#Ciudad').text(ciudad);
+                            $('#Responsable').text(responsable);
+                            $('#Comentario').text(comentario);
                         } else {
                             alert('No hay datos de encabezado para mostrar.');
                         }

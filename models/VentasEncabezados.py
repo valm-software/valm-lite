@@ -14,6 +14,10 @@ class VentaEncabezado(db.Model):
     IdCompPago = db.Column(db.Integer, db.ForeignKey('CompromisoDePagos.Id'))
     IdUsuario = db.Column(db.Integer, db.ForeignKey('Usuarios.Id'))
     Cerrado = db.Column(db.Boolean, default=False)
+    Ciudad = db.Column(db.String(255))
+    Responsable = db.Column(db.String(255))
+    Comentario = db.Column(db.String(256))
+
 
     # # Definir las relaciones con otras tablas
     # cliente = db.relationship('Cliente', backref='ventas', lazy=False)
@@ -32,5 +36,8 @@ class VentaEncabezado(db.Model):
             'NumTarjeta': self.NumTarjeta,
             'IdCompPago': self.IdCompPago,
             'IdUsuario': self.IdUsuario,
-            'Cerrado': self.Cerrado
+            'Cerrado': self.Cerrado,
+            'Ciudad': self.Ciudad,
+            'Responsable': self.Responsable,
+            'Comentario': self.Comentario
         }
