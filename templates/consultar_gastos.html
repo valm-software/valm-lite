@@ -54,10 +54,10 @@
                     <td>{{ gasto.usuario.Nombre }}</td>
                     <td>
                         {% if gasto.Ruta %}      
-                        <button class="btn btn-primary" onclick="mostrarArchivo('{{ url_for("visualizar_archivo", filename=gasto.Ruta.split('\\')[-1]) }}')">
+                        <button class="btn btn-primary" onclick="mostrarArchivo('{{ url_for("visualizar_archivo", filename=gasto.Ruta.split('/')[-1]) }}')">
                             <i class="bi bi-eye-fill"></i> Visualizar
                         </button>
-                        <a href="{{ url_for('descargar_archivo', filename=gasto.Ruta.split('\\')[-1]) }}" download>
+                        <a href="{{ url_for('descargar_archivo', filename=gasto.Ruta.split('/')[-1]) }}" download>
                             <button class="btn btn-success">
                                 <i class="bi bi-cloud-arrow-down-fill"></i> Descarga
                             </button>
