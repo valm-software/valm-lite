@@ -454,7 +454,7 @@ def crear_gastos(usuario):
         if 'imagen' in request.files:
             imagen = request.files['imagen']
             nombre_archivo = secure_filename(imagen.filename)
-            ruta_guardado = os.path.join('Imagenes_gastos', nombre_archivo)
+            ruta_guardado = os.path.join('/home/soporte/Imagenes_Gastos', nombre_archivo)
             imagen.save(ruta_guardado)
 
             # Crear el registro de gasto en la base de datos
@@ -695,11 +695,11 @@ def verificar_tarjeta(numero_tarjeta):
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):
-    return send_from_directory('Imagenes_gastos', filename, as_attachment=False)
+    return send_from_directory('/home/soporte/Imagenes_Gastos', filename, as_attachment=False)
 
 @app.route('/descargar_archivo/<filename>')
 def descargar_archivo(filename):
-    return send_from_directory('Imagenes_gastos', filename, as_attachment=True, download_name=filename)
+    return send_from_directory('/home/soporte/Imagenes_gastos', filename, as_attachment=True, download_name=filename)
 
 
 if __name__ == '__main__':
