@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify,send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify,send_from_directory,send_file
 from flask_session import Session
 from datetime import timedelta
 from functools import wraps
@@ -18,6 +18,8 @@ from werkzeug.utils import secure_filename
 import os
 from urllib.parse import unquote
 from datetime import datetime , time
+import io
+import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -423,17 +425,57 @@ def crear_cobro(usuario):
             return jsonify({'message': f'Error al crear el cobro: {str(e)}'}), 500
 
 
-@app.route('/menu/cobros/consultar/<usuario>')
+
+@app.route('/menu/cobros/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
 def consultar_cobro(usuario):
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
+
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('tarjetas', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
-    if 'consultar' in permisosConsultar:
-        return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
-    else:
-        return "No tienes permisos para ver esta página."
+
+
+    if request.method == 'POST':
+        fecha_inicio = request.form['fecha_inicio']
+        fecha_fin = request.form['fecha_fin']
+
+        cursor_informeco = db.session.connection().connection.cursor()
+        cursor_informeco.callproc('InfoPagosxRangoFechas', [fecha_inicio, fecha_fin])
+        resultados_informe = [dict(zip([column[0] for column in cursor_informeco.description], row)) for row in cursor_informeco.fetchall()]
+        cursor_informeco.close()
+
+        if resultados_informe:  # Verificar si hay resultados
+            session['resultados_informe'] = resultados_informe
+            return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario, resultado_procedimiento=resultados_informe)
+        else:
+            return "No se encontraron resultados."
+
+    return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
+
+    # if request.method == 'POST':
+    #     fecha_inicio = request.form['fecha_inicio']
+    #     fecha_fin = request.form['fecha_fin']
+
+    #     cursor_informeco = db.session.connection().connection.cursor()
+    #     cursor_informeco.callproc('InfoPagosxRangoFechas', [fecha_inicio, fecha_fin])
+    #     resultados_informe = [dict(zip([column[0] for column in cursor_informeco.description], row)) for row in cursor_informeco.fetchall()]
+    #     cursor_informeco.close()
+
+    #     # Convertir los resultados a un DataFrame de pandas
+    #     df_resultados = pd.DataFrame(resultados_informe)
+
+    #     # Crear un objeto BytesIO para almacenar el archivo Excel
+    #     output = io.BytesIO()
+    #     df_resultados.to_excel(output, index=False, sheet_name='Sheet1')
+
+    #     # Devolver el archivo Excel como una descarga
+    #     output.seek(0)
+    #     return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='resultado_cobros.xlsx')
+
+    # return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
+
+
 
 @app.route('/menu/gastos/crear/<usuario>', methods=['GET', 'POST'])
 def crear_gastos(usuario):
@@ -692,6 +734,20 @@ def verificar_tarjeta(numero_tarjeta):
 
     except Exception as e:
         return jsonify({"ID": 0, "Mensaje": str(e)}), 500  # Devuelve un mensaje de error en formato JSON
+
+@app.route('/descargar_informe_cobros', methods=['POST'])
+def descargar_informe_cobros():
+    resultados_informe = session.get('resultados_informe')
+    if resultados_informe:
+        # Generar el archivo Excel y devolverlo como una descarga
+        df_resultados = pd.DataFrame(resultados_informe)
+        output = io.BytesIO()
+        df_resultados.to_excel(output, index=False, sheet_name='Sheet1')
+        output.seek(0)
+        return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='Informe_Cobros.xlsx')
+    else:
+        return "No hay resultados para descargar."
+
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):

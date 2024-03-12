@@ -52,7 +52,7 @@
                             <a class="dropdown-item" href="{{ url_for('crear_cobro', usuario=usuario) }}"><i class="bi bi-currency-exchange  icon-large"  icon-large></i> Crear Cobro</a>
                         {% endif %}
                         {% if 'consultar' in permisos['cobros'] %}
-                            <a class="dropdown-item" href="{{ url_for('consultar_cobro', usuario=usuario) }}"><i class="bi bi-piggy-bank-fill  icon-large"></i> Consultar Cobro</a>
+                            <a class="dropdown-item" href="{{ url_for('consultar_cobro', usuario=usuario) }}"><i class="bi bi-piggy-bank-fill  icon-large"></i> Informe cobros</a>
                         {% endif %}
                     </div>
                 </li>
