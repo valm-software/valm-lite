@@ -21,6 +21,7 @@ from datetime import datetime , time
 import io
 import pandas as pd
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -680,18 +681,24 @@ def get_calculo(IdVentaEncabezado):
         return jsonify({'message': str(e)}), 500
 
 
+from sqlalchemy.exc import SQLAlchemyError
+
 @app.route('/get_tarjeta/<numero_tarjeta>', methods=['GET'])
 def get_tarjeta(numero_tarjeta):
     try:
-        print('test1');
         encabezado = VentaEncabezado.query.filter_by(NumTarjeta=numero_tarjeta).first()
         if encabezado:
             cuotas = Cuota.query.filter_by(IdVentaEncabezado=encabezado.Id).all()
             cuotas_dict = [c.to_dict() for c in cuotas]  # Asumiendo que tienes un método to_dict en el modelo
-            return jsonify({'encabezado': encabezado.to_dict(), 'cuotas': cuotas_dict}), 200
+            # Convertir cualquier dato de tipo bytes a str
+            encabezado_dict = encabezado.to_dict()
+            for key, value in encabezado_dict.items():
+                if isinstance(value, bytes):
+                    encabezado_dict[key] = value.decode('utf-8')  # Convertir bytes a str
+            return jsonify({'encabezado': encabezado_dict, 'cuotas': cuotas_dict}), 200
         else:
             return jsonify({'message': 'Tarjeta no encontrada'}), 404
-    except db.SQLAlchemyError as e:
+    except SQLAlchemyError as e:
         app.logger.error(f"Error al acceder a la base de datos: {str(e)}")
         return jsonify({'message': 'Error en el servidor'}), 500
     except Exception as e:
