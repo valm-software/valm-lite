@@ -12,6 +12,14 @@ class Cliente(db.Model):
     Direccion = db.Column(db.String(255))
     Ubicacion = db.Column(db.String(255))
     Nota = db.Column(db.String(255))
+    TelPreInter = db.Column(db.String(3))
+    TelArea = db.Column(db.String(4))
+    TelL1 = db.Column(db.String(4))
+    TelL2 = db.Column(db.String(4))
+    TelMovil = db.Column(db.Boolean)
+    TelValido = db.Column(db.Boolean)
+    TelAuditado = db.Column(db.Boolean)   
+    Telefono1Back = db.Column(db.String(100))   
 
     # # Definir la relación uno a muchos con VentasEncabezados
     # ventas_encabezados = db.relationship('VentaEncabezado', backref='cliente', lazy=True)

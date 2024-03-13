@@ -72,6 +72,15 @@
                 </div>
             </li>
         {% endif %}
+        {% if 'buscador' in permisos %}
+        <li class="nav-item dropdown">
+            {% if 'consultar' in permisos['gastos'] %}
+            <a class="nav-link dropdown" href="{{ url_for('buscador', usuario=usuario) }}">
+                <i class="bi bi-search  icon-large"></i> Buscador
+            </a>
+            {% endif %}
+        </li>
+    {% endif %}
         </ul>
     </div>
     <div class="navbar-nav ml-auto align-items-center my-0"> <!-- Alineación a la derecha y en la misma línea -->

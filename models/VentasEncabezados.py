@@ -13,10 +13,17 @@ class VentaEncabezado(db.Model):
     NumTarjeta = db.Column(db.Integer)
     IdCompPago = db.Column(db.Integer, db.ForeignKey('CompromisoDePagos.Id'))
     IdUsuario = db.Column(db.Integer, db.ForeignKey('Usuarios.Id'))
-    Cerrado = db.Column(db.Boolean, default=False)
+    Cerrado = db.Column(db.String(1))
     Ciudad = db.Column(db.String(255))
     Responsable = db.Column(db.String(255))
     Comentario = db.Column(db.String(256))
+    Auditado = db.Column(db.Boolean)
+    Cancelada = db.Column(db.Boolean)
+    Anulada = db.Column(db.Boolean)
+    Perdida = db.Column(db.Boolean)
+    VLiquidada = db.Column(db.Boolean)
+    FCreado = db.Column(db.DateTime)
+   
 
 
     # # Definir las relaciones con otras tablas

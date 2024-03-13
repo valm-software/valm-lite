@@ -20,6 +20,7 @@ from urllib.parse import unquote
 from datetime import datetime , time
 import io
 import pandas as pd
+from sqlalchemy import func
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
@@ -48,7 +49,8 @@ usuarios = {
             'clientes': ['crear', 'consultar'],
             'cobros': ['crear', 'consultar'],
             'gastos': ['crear', 'consultar'],
-            'inicio': ['crear', 'consultar']
+            'inicio': ['crear', 'consultar'],
+            'buscador': ['crear', 'consultar']
         }
     },
     'fray.lm': {
@@ -59,7 +61,8 @@ usuarios = {
             'clientes': ['crear', 'consultar'],
             'cobros': ['crear', 'consultar'],
             'gastos': ['crear', 'consultar'],
-            'inicio': ['crear', 'consultar']
+            'inicio': ['crear', 'consultar'],
+            'buscador': ['crear', 'consultar']
         }
     },
     'parra.pa': {
@@ -70,7 +73,8 @@ usuarios = {
             'clientes': ['crear', 'consultar'],
             'cobros': ['crear', 'consultar'],
             'gastos': ['crear', 'consultar'],
-            'inicio': ['crear', 'consultar']
+            'inicio': ['crear', 'consultar'],
+            'buscador': ['crear', 'consultar']
         }
     }
 }
@@ -568,6 +572,30 @@ def inicio_web(usuario):
         return render_template('inicio.html', permisos=permisos, usuario=usuario)
     else:
         return "No tienes permisos para ver esta página."
+    
+@app.route('/menu/buscador/<usuario>', methods=['GET', 'POST'])
+@login_required
+def buscador(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+
+    permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('clientes', [])
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+    
+    if 'consultar' in permisosConsultar:
+        if request.method == 'POST':
+            termino_busqueda = request.form['termino_busqueda']
+            campo_busqueda = request.form['campo_busqueda']
+
+            # Realizamos la búsqueda de datos
+            resultados = buscar_datos(termino_busqueda, campo_busqueda)
+            # Renderizamos la plantilla con los resultados de la búsqueda
+            return render_template('buscador.html', permisos=permisos, usuario=usuario, resultados=resultados)
+        else:
+            return render_template('buscador.html', permisos=permisos, usuario=usuario)
+            
+    else:
+        return "No tienes permisos para ver esta página."
 
 @app.route('/get_usuarios', methods=['GET'])
 def get_usuarios():
@@ -747,6 +775,55 @@ def descargar_informe_cobros():
         return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='Informe_Cobros.xlsx')
     else:
         return "No hay resultados para descargar."
+    
+def buscar_datos(termino_busqueda, campo_busqueda):
+    # Realizamos la consulta a la base de datos según el campo de búsqueda seleccionado
+    if campo_busqueda == 'nombre':
+        clientes = Cliente.query.filter(Cliente.Nombres.like(f'%{termino_busqueda}%')).all()
+    elif campo_busqueda == 'dni':
+        clientes = Cliente.query.filter(Cliente.DNI.like(f'%{termino_busqueda}%')).all()
+    elif campo_busqueda == 'apellido':
+        clientes = Cliente.query.filter(Cliente.Apellidos.like(f'%{termino_busqueda}%')).all()
+    elif campo_busqueda == 'telefono':
+        clientes = Cliente.query.filter(db.or_(
+            Cliente.Telefono1.like(f'%{termino_busqueda}%'),
+            Cliente.Telefono2.like(f'%{termino_busqueda}%'),
+            Cliente.Telefono3.like(f'%{termino_busqueda}%')
+        )).all()
+    elif campo_busqueda == 'direccion':
+        clientes = Cliente.query.filter(Cliente.Direccion.like(f'%{termino_busqueda}%')).all()
+    else:
+        clientes = []
+
+   # Obtenemos los datos de venta relacionados con los clientes encontrados
+    resultados = []
+
+    for cliente in clientes:
+        # Consultamos las ventas asociadas a cada cliente
+        ventas_cliente = VentaEncabezado.query.filter_by(IdCliente=cliente.Id).all()
+        for venta in ventas_cliente:
+            # Consultamos las cuotas asociadas a la venta y sumamos los abonos
+            abonos = db.session.query(func.sum(Cuota.Abono)).filter_by(IdVentaEncabezado=venta.Id).scalar()
+            # Si no hay abonos, establecemos el valor en 0
+            if abonos is None:
+                abonos = 0
+            # Calculamos el importe de venta ajustado
+            importe_pendiente = venta.ImporteVenta - (venta.ImporteInicial + abonos)
+            resultados.append({
+                'num_tarjeta': venta.NumTarjeta,
+                'nombre': cliente.Nombres,
+                'apellido': cliente.Apellidos,
+                'telefono': cliente.Telefono1,  # Aquí puedes seleccionar el teléfono adecuado
+                'direccion': cliente.Direccion,
+                'dni': cliente.DNI,
+                'importe_venta': venta.ImporteVenta,
+                'importe_pent': importe_pendiente,
+                'num_cuotas': venta.NumCuotas,
+                'f_prox_cuota': venta.FProxCuota,
+                'cerrado': ord(venta.Cerrado)
+            })
+    return resultados
+
 
 
 @app.route('/visualizar_archivo/<filename>')
