@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="container">
-    <h1 class="text-center mb-4">Informe Cobros</h1>
+    <hr>
     <form id="consultaForm" method="post" action="{{ url_for('consultar_cobro', usuario=usuario) }}">
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -57,8 +57,8 @@
         <hr>
        <div style="margin-bottom: 20px;">
         <form action="{{ url_for('descargar_informe_cobros') }}" method="POST">
-            <button type="submit" class="btn btn-success">
-                <i class="bi bi-file-earmark-excel-fill"> Descargar Informe</i>
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-filetype-xlsx"> Descargar</i>
             </button>
         </div>
 

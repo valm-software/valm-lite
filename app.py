@@ -463,6 +463,15 @@ def consultar_cobro(usuario):
                     row['Saldo'] = int(row['Saldo'])
                 else:
                     row['Saldo'] = 0
+
+                # Ajustar el detalle según el producto
+                if 'PRESTAMO' not in row['Producto']:
+                    row['Detalle'] = ''  # Quitar el detalle si no es un préstamo
+                else:
+                # Eliminar puntos y comas del detalle si es un préstamo
+                    if row['Detalle']:
+                        row['Detalle'] = row['Detalle'].replace('.', '').replace(',', '')
+                        
             # Calcular la suma de los abonos que contienen la palabra 'préstamo' de mobiplaz`
             suma_prestamos_mobiplaz = sum(row['Abono'] for row in resultados_informe if row['Producto'] == 'PRESTAMOS')
 
@@ -477,6 +486,8 @@ def consultar_cobro(usuario):
 
             # Calcular la suma total de todos los abonos
             suma_abonos_total = sum(row['Abono'] for row in resultados_informe)
+            
+
 
 
             session['resultados_informe'] = resultados_informe
