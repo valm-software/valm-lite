@@ -2,30 +2,66 @@
 
 {% block content %}
 
-<div class="container-xl">
-    <h1>Informe Cobros</h1>
-    <form method="post" action="{{ url_for('consultar_cobro', usuario=usuario) }}">
-        <div class="form-group">
-            <label for="fecha_inicio">Fecha de inicio:</label>
-            <input type="text" class="form-control" name="fecha_inicio" id="fecha_inicio" required>
+<div class="container">
+    <h1 class="text-center mb-4">Informe Cobros</h1>
+    <form id="consultaForm" method="post" action="{{ url_for('consultar_cobro', usuario=usuario) }}">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="fecha_inicio">Fecha de inicio:</label>
+                <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="fecha_fin">Fecha de fin:</label>
+                <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" required>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="fecha_fin">Fecha de fin:</label>
-            <input type="text" class="form-control" name="fecha_fin" id="fecha_fin" required>
+        <div class="row justify-content-center">
+            <div class="col-md-6 mb-3">
+                <button type="submit" class="btn btn-primary btn-block">Consultar</button>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary">Consultar</button>
     </form>
+    <div id="fechaError" class="text-danger text-center mt-3" style="display: none;">La fecha de inicio no puede ser posterior a la fecha de fin.</div>
 </div>
+
 
 <div class="container-fluid">
     {% if resultado_procedimiento %}
+
+
+    <div class="container-fluid">
+        {% if resultado_procedimiento %}
+            <hr>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <p><strong>Abonos Préstamos Mobiplaz:</strong> {{ "{:,.0f}".format(suma_prestamos_mobiplaz).replace(',', '.') }}</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <p><strong>Abonos Préstamos Parra:</strong> {{ "{:,.0f}".format(suma_prestamos_parra).replace(',', '.') }}</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <p><strong>Abonos de los Préstamos:</strong> {{ "{:,.0f}".format(suma_prestamos).replace(',', '.') }}</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <p><strong>Abonos de los Muebles:</strong> {{ "{:,.0f}".format(suma_otros_abonos).replace(',', '.') }}</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <p><strong>Total Abonos:</strong> {{ "{:,.0f}".format(suma_abonos_total).replace(',', '.') }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+
+
         <hr>
        <div style="margin-bottom: 20px;">
         <form action="{{ url_for('descargar_informe_cobros') }}" method="POST">
             <button type="submit" class="btn btn-success">
-                <i class="bi bi-file-earmark-excel-fill"></i>
+                <i class="bi bi-file-earmark-excel-fill"> Descargar Informe</i>
             </button>
         </div>
+
         </form>
         <div class="table-responsive">
             <table class="table table-striped table-responsive" id="tabla_resultados">
@@ -51,6 +87,33 @@
 </div>
 
 <script type="text/javascript">
+    // Al cargar la página
+    document.addEventListener("DOMContentLoaded", function() {
+        // Obtener la fecha actual en formato YYYY-MM-DD
+        var today = new Date().toISOString().slice(0, 10);
+        // Establecer la fecha actual como valor por defecto en los campos de fecha
+        document.getElementById("fecha_inicio").value = today;
+        document.getElementById("fecha_fin").value = today;
+    });
+
+    // Al enviar el formulario
+    document.getElementById("consultaForm").addEventListener("submit", function(event) {
+        // Obtener los valores de fecha de inicio y fecha de fin
+        var fechaInicio = document.getElementById("fecha_inicio").value;
+        var fechaFin = document.getElementById("fecha_fin").value;
+
+        // Verificar si la fecha de inicio es posterior a la fecha de fin
+        if (fechaInicio > fechaFin) {
+            // Mostrar el mensaje de error
+            document.getElementById("fechaError").style.display = "block";
+            // Prevenir el envío del formulario
+            event.preventDefault();
+        } else {
+            // Ocultar el mensaje de error si la validación es exitosa
+            document.getElementById("fechaError").style.display = "none";
+        }
+    });
+
     $(document).ready( function () {
         $('#tabla_resultados').DataTable();
     });

@@ -431,6 +431,8 @@ def crear_cobro(usuario):
 
 
 
+from decimal import Decimal
+
 @app.route('/menu/cobros/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
 def consultar_cobro(usuario):
@@ -439,7 +441,6 @@ def consultar_cobro(usuario):
 
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('tarjetas', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
-
 
     if request.method == 'POST':
         fecha_inicio = request.form['fecha_inicio']
@@ -451,12 +452,47 @@ def consultar_cobro(usuario):
         cursor_informeco.close()
 
         if resultados_informe:  # Verificar si hay resultados
+            # Convertir valores de las columnas 'abono' y 'saldo' a enteros
+            for row in resultados_informe:
+                if row['Abono']:
+                    row['Abono'] = int(row['Abono'])
+                else:
+                    row['Abono'] = 0
+
+                if row['Saldo']:
+                    row['Saldo'] = int(row['Saldo'])
+                else:
+                    row['Saldo'] = 0
+            # Calcular la suma de los abonos que contienen la palabra 'préstamo' de mobiplaz`
+            suma_prestamos_mobiplaz = sum(row['Abono'] for row in resultados_informe if row['Producto'] == 'PRESTAMOS')
+
+            # Calcular la suma de los abonos que contienen la palabra 'préstamos `parra'
+            suma_prestamos_parra=  sum(row['Abono'] for row in resultados_informe if row['Producto'] == 'PRESTAMOS PARRA')
+
+            # Calcular la suma de los abonos que contienen la palabra 'préstamo'
+            suma_prestamos = sum(row['Abono'] for row in resultados_informe if 'PRESTAMOS PARRA' in row['Producto'] or 'PRESTAMOS' in row['Producto'])
+
+            # Calcular la suma de los demás abonos
+            suma_otros_abonos = sum(row['Abono'] for row in resultados_informe if 'PRESTAMOS PARRA' not in row['Producto'] and 'PRESTAMOS' not in row['Producto'])
+
+            # Calcular la suma total de todos los abonos
+            suma_abonos_total = sum(row['Abono'] for row in resultados_informe)
+
+
             session['resultados_informe'] = resultados_informe
-            return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario, resultado_procedimiento=resultados_informe)
+            return render_template('consultar_cobro.html', permisos=permisos, 
+                                                           usuario=usuario, 
+                                                           resultado_procedimiento=resultados_informe, 
+                                                           suma_prestamos_mobiplaz=suma_prestamos_mobiplaz,
+                                                           suma_prestamos_parra=suma_prestamos_parra,
+                                                           suma_prestamos=suma_prestamos, 
+                                                           suma_otros_abonos=suma_otros_abonos, 
+                                                           suma_abonos_total=suma_abonos_total)
         else:
             return "No se encontraron resultados."
 
     return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
+
 
     # if request.method == 'POST':
     #     fecha_inicio = request.form['fecha_inicio']
