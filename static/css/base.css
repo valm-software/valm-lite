@@ -56,3 +56,27 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+
+.custom-alert {
+    position: fixed;
+    top: 90px; /* Ajusta el valor según el margen deseado */
+    right: 15px; /* Ajusta el margen derecho deseado */
+    max-width: 400px; /* Ajusta el ancho máximo deseado */
+    margin-left: auto; /* Establece el margen izquierdo automático */
+    border-radius: 5px; /* Ajusta el radio de borde deseado */
+    z-index: 1000; /* Ajusta el índice z si necesitas que esté por encima de otros elementos */
+    animation: slideOut 5s ease forwards; /* Duración de 5 segundos */
+  }
+
+
+  @keyframes slideOut {
+    0% {
+        transform: translateY(-110%); /* Empieza más arriba */
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(500%); /* Termina más abajo */
+        opacity: 0;
+    }
+}

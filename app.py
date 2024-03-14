@@ -500,7 +500,7 @@ def consultar_cobro(usuario):
                                                            suma_otros_abonos=suma_otros_abonos, 
                                                            suma_abonos_total=suma_abonos_total)
         else:
-            return "No se encontraron resultados."
+            return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario, no_resultados=True)
 
     return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
 
