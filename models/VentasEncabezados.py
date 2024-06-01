@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from sqlalchemy import func
 from database import db
 
 class VentaEncabezado(db.Model):
@@ -13,17 +16,19 @@ class VentaEncabezado(db.Model):
     NumTarjeta = db.Column(db.Integer)
     IdCompPago = db.Column(db.Integer, db.ForeignKey('CompromisoDePagos.Id'))
     IdUsuario = db.Column(db.Integer, db.ForeignKey('Usuarios.Id'))
-    Cerrado = db.Column(db.String(1))
+    Cerrado = db.Column(db.Boolean, default=False)  # Usar db.Boolean y default=False
     Ciudad = db.Column(db.String(255))
     Responsable = db.Column(db.String(255))
     Comentario = db.Column(db.String(256))
-    Auditado = db.Column(db.Boolean)
-    Cancelada = db.Column(db.Boolean)
-    Anulada = db.Column(db.Boolean)
-    Perdida = db.Column(db.Boolean)
-    VLiquidada = db.Column(db.Boolean)
-    FCreado = db.Column(db.DateTime)
-   
+    Auditado = db.Column(db.Boolean, default=False)
+    Cancelada = db.Column(db.Boolean, default=False)
+    Anulada = db.Column(db.Boolean, default=False)
+    Perdida = db.Column(db.Boolean, default=False)
+    VLiquidada = db.Column(db.Boolean, default=False)
+    FCreado = db.Column(db.DateTime, default=func.now())  # Utiliza func.now() para la fecha y hora actuales
+    Pospuesta = db.Column(db.Integer, default=0)
+    FUpdPospuesta = db.Column(db.DateTime)
+      
 
 
     # # Definir las relaciones con otras tablas
@@ -46,5 +51,7 @@ class VentaEncabezado(db.Model):
             'Cerrado': self.Cerrado,
             'Ciudad': self.Ciudad,
             'Responsable': self.Responsable,
-            'Comentario': self.Comentario
+            'Comentario': self.Comentario,
+            'Pospuesta': self.Pospuesta,
+            'FUpdPospuesta': self.FUpdPospuesta
         }

@@ -51,12 +51,38 @@
                         {% if 'crear' in permisos['cobros'] %}
                             <a class="dropdown-item" href="{{ url_for('crear_cobro', usuario=usuario) }}"><i class="bi bi-currency-exchange  icon-large"  icon-large></i> Crear Cobro</a>
                         {% endif %}
+                        
+                        {% if 'modificar' in permisos['cobros'] %}
+                            <a class="dropdown-item" href="{{ url_for('cuotas_dia', usuario=usuario) }}"><i class="bi bi-calendar-day-fill icon-large"></i> Cobros del día</a>
+                        {% endif %}
+
                         {% if 'consultar' in permisos['cobros'] %}
                             <a class="dropdown-item" href="{{ url_for('consultar_cobro', usuario=usuario) }}"><i class="bi bi-clipboard2-data-fill  icon-large"></i> Informe cobros</a>
+                        {% endif %}
+
+                    </div>
+                </li>
+            {% endif %}
+
+            {% if 'admin' in permisos %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="cobrosDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-building-lock  icon-large"></i> Admin
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="cobrosDropdown">
+                        {% if 'crear' in permisos['admin'] %}
+                            <a class="dropdown-item" href="{{ url_for('cierre_mes', usuario=usuario) }}"><i class="bi bi-file-earmark-lock-fill  icon-large"  icon-large></i> Cierre Mes</a>
+                        {% endif %}
+
+                        {% if 'consultar' in permisos['admin'] %}
+                            <a class="dropdown-item" href="{{ url_for('dashboard', usuario=usuario) }}"><i class="bi bi-speedometer  icon-large"></i> Dashboard</a>
                         {% endif %}
                     </div>
                 </li>
             {% endif %}
+
+
+
             {% if 'gastos' in permisos %}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="gastosDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

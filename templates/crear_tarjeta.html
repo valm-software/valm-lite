@@ -288,6 +288,21 @@ flatpickr("#FProxCuota", {
         }
     });
 
+  // Solicitar el siguiente número de tarjeta al cargar la página
+  $.ajax({
+      url: '/get_next_num_tarjeta',
+      type: 'GET',
+      success: function(response) {
+          if (response.next_id) {
+              $('#NumTarjeta').val(response.next_id);
+          }
+      },
+      error: function(xhr, status, error) {
+          console.error('Error:', error, status, xhr.responseText);
+      }
+  });
+
+
     // Inicializar Select2 para productos
     $('#producto').select2({
         ajax: {

@@ -1,0 +1,144 @@
+{% include 'menu.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Bloque de depuración -->
+    <!-- <div class="row">
+        <div class="col-md-12">
+            <h2>Debugging Information</h2>
+            <pre>{{ resultados | tojson }}</pre>
+            <pre>{{ titulo }}</pre>
+        </div>
+    </div> -->
+    
+    <div class="row">
+        {% if resultados|length > 0 %}
+        <div class="col-md-12">
+            <h2>{{ titulo }} - Importe Venta</h2>
+            <canvas id="line-chart-venta" width="800" height="400"></canvas>
+        </div>
+        <div class="col-md-12">
+            <h2>{{ titulo }} - Abonos</h2>
+            <canvas id="line-chart-abonos" width="800" height="400"></canvas>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if resultados|length > 0 %}
+        
+        var rawData = {{ resultados | tojson }};
+        
+        var groupedData = {};
+        rawData.forEach(function(item) {
+            if (!groupedData[item.Mes_Liquidacion]) {
+                groupedData[item.Mes_Liquidacion] = {};
+            }
+            if (!groupedData[item.Mes_Liquidacion][item.Nombre]) {
+                groupedData[item.Mes_Liquidacion][item.Nombre] = {
+                    importeVenta: 0,
+                    Abonos: 0
+                };
+            }
+            groupedData[item.Mes_Liquidacion][item.Nombre].importeVenta += parseFloat(item.importeVenta);
+            groupedData[item.Mes_Liquidacion][item.Nombre].Abonos += parseFloat(item.Abonos);
+        });
+
+        var labels = Object.keys(groupedData).sort();  // Ordenar las etiquetas
+        var datasetsVenta = [];
+        var datasetsAbonos = [];
+
+        var productNames = [];
+        rawData.forEach(function(item) {
+            if (!productNames.includes(item.Nombre)) {
+                productNames.push(item.Nombre);
+            }
+        });
+
+        var colors = [
+            'rgba(255, 99, 132, 1)', // Rojo
+            'rgba(54, 162, 235, 1)', // Azul
+            'rgba(255, 206, 86, 1)', // Amarillo
+            'rgba(75, 192, 192, 1)', // Verde
+            'rgba(153, 102, 255, 1)', // Morado
+            'rgba(255, 159, 64, 1)', // Naranja
+            'rgba(199, 199, 199, 1)', // Gris
+            'rgba(83, 102, 255, 1)',  // Azul más oscuro
+            'rgba(255, 102, 153, 1)', // Rosa
+            'rgba(102, 255, 102, 1)'  // Verde claro
+        ];
+
+        productNames.forEach(function(product, index) {
+            var color = colors[index % colors.length];
+
+            var importeVentaData = [];
+            var abonosData = [];
+
+            labels.forEach(function(label) {
+                if (groupedData[label][product]) {
+                    importeVentaData.push(groupedData[label][product].importeVenta);
+                    abonosData.push(groupedData[label][product].Abonos);
+                } else {
+                    importeVentaData.push(0);
+                    abonosData.push(0);
+                }
+            });
+
+            datasetsVenta.push({
+                label: product + ' - Importe Venta',
+                data: importeVentaData,
+                borderColor: color,
+                backgroundColor: color.replace('1)', '0.2)'),
+                borderWidth: 1,
+                fill: false
+            });
+
+            datasetsAbonos.push({
+                label: product + ' - Abonos',
+                data: abonosData,
+                borderColor: color,
+                backgroundColor: color.replace('1)', '0.2)'),
+                borderWidth: 1,
+                fill: false
+            });
+        });
+
+        var ctxVenta = document.getElementById('line-chart-venta').getContext('2d');
+        var lineChartVenta = new Chart(ctxVenta, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasetsVenta
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var ctxAbonos = document.getElementById('line-chart-abonos').getContext('2d');
+        var lineChartAbonos = new Chart(ctxAbonos, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasetsAbonos
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        {% endif %}
+    });
+</script>
+{% endblock %}

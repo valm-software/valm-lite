@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify,send_from_directory,send_file
 from flask_session import Session
 from datetime import timedelta
@@ -20,11 +21,25 @@ from urllib.parse import unquote
 from datetime import datetime , time
 import io
 import pandas as pd
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.exc import SQLAlchemyError
+import locale 
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta'
+
+# Configura la localización a español de Argentina
+locale.setlocale(locale.LC_ALL, 'es_AR.UTF-8')
+
+# Definir un filtro personalizado para formatear números como moneda sin decimales
+def format_currency(value):
+    # Formatear el valor con separadores de miles y sin decimales
+    formatted_value = "${:,.0f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
+    return formatted_value
+
+# Registrar el filtro con Jinja2
+app.jinja_env.filters['currency'] = format_currency
+
 
 # Configurar la sesión para que caduque después de 2 horas de inactividad
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -48,9 +63,10 @@ usuarios = {
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
             'clientes': ['crear', 'consultar'],
-            'cobros': ['crear', 'consultar'],
+            'cobros': ['crear', 'consultar', 'modificar'],
             'gastos': ['crear', 'consultar'],
             'inicio': ['crear', 'consultar'],
+            'admin': ['crear', 'consultar'],
             'buscador': ['crear', 'consultar']
         }
     },
@@ -60,9 +76,10 @@ usuarios = {
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
             'clientes': ['crear', 'consultar'],
-            'cobros': ['crear', 'consultar'],
+            'cobros': ['crear', 'consultar', 'modificar'],
             'gastos': ['crear', 'consultar'],
             'inicio': ['crear', 'consultar'],
+            'admin': ['crear', 'consultar'],
             'buscador': ['crear', 'consultar']
         }
     },
@@ -72,9 +89,10 @@ usuarios = {
         'permisos': {
             'tarjetas': ['crear', 'consultar'],
             'clientes': ['crear', 'consultar'],
-            'cobros': ['crear', 'consultar'],
+            'cobros': ['crear', 'consultar', 'modificar'],
             'gastos': ['crear', 'consultar'],
             'inicio': ['crear', 'consultar'],
+            'admin': ['crear', 'consultar'],
             'buscador': ['crear', 'consultar']
         }
     }
@@ -264,7 +282,13 @@ def crear_tarjeta(usuario):
 
 
 
-
+@app.route('/get_next_num_tarjeta', methods=['GET'])
+@login_required
+def get_next_num_tarjeta():
+    query = text('SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = :database AND TABLE_NAME = "VentasEncabezados"')
+    result = db.session.execute(query, {'database': db.engine.url.database}).fetchone()
+    next_id = result[0] if result else None
+    return jsonify({'next_id': next_id})
 
 
 @app.route('/menu/tarjetas/consultar/<usuario>', methods=['GET', 'POST'])
@@ -430,9 +454,7 @@ def crear_cobro(usuario):
             return jsonify({'message': f'Error al crear el cobro: {str(e)}'}), 500
 
 
-
 from decimal import Decimal
-
 @app.route('/menu/cobros/consultar/<usuario>', methods=['GET', 'POST'])
 @login_required
 def consultar_cobro(usuario):
@@ -504,28 +526,45 @@ def consultar_cobro(usuario):
 
     return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
 
+@app.route('/menu/cobros/modificar/<usuario>', methods=['GET', 'POST'])
+@login_required
+def cuotas_dia(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+    
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+    today = datetime.today().date()
+    max_date = today + timedelta(days=15)
+    selected_date = request.form.get('selected_date') or request.args.get('selected_date') or today
+    
+    # Realizar la consulta conjunta
+    cuotas = db.session.query(VentaEncabezado, Cliente, Producto.Nombre).join(Cliente, VentaEncabezado.IdCliente == Cliente.Id).join(VentaDetalle, VentaEncabezado.Id == VentaDetalle.IdVentaEncabezado).join(Producto, VentaDetalle.IdProducto == Producto.Id).filter(VentaEncabezado.FProxCuota == selected_date).all()
+    
+    # Agrupar las cuotas por nombre de producto
+    cuotas_por_producto = defaultdict(list)
+    for venta, cliente, producto_nombre in cuotas:
+        cuotas_por_producto[producto_nombre].append((venta, cliente))
+    
+    num_cuotas = len(cuotas)
 
-    # if request.method == 'POST':
-    #     fecha_inicio = request.form['fecha_inicio']
-    #     fecha_fin = request.form['fecha_fin']
+    if request.method == 'POST' and 'update_id' in request.form:
+        cuota_id = request.form.get('update_id')
+        new_date_str = request.form.get(f'new_date_{cuota_id}')
+        if new_date_str:
+            new_date = datetime.strptime(new_date_str, '%Y-%m-%d').date()
+            # Validar que la nueva fecha no sea más de 15 días desde hoy
+            if new_date <= max_date:
+                cuota = VentaEncabezado.query.get(cuota_id)
+                cuota.FProxCuota = new_date
+                cuota.Pospuesta = (cuota.Pospuesta or 0) + 1
+                cuota.FUpdPospuesta = datetime.now()
+                db.session.commit()
+                return redirect(url_for('cuotas_dia', usuario=usuario, selected_date=selected_date))
+            else:
+                flash("La nueva fecha no puede ser más de 15 días desde hoy.", "error")
 
-    #     cursor_informeco = db.session.connection().connection.cursor()
-    #     cursor_informeco.callproc('InfoPagosxRangoFechas', [fecha_inicio, fecha_fin])
-    #     resultados_informe = [dict(zip([column[0] for column in cursor_informeco.description], row)) for row in cursor_informeco.fetchall()]
-    #     cursor_informeco.close()
+    return render_template('cuotas_dia.html', permisos=permisos, usuario=usuario, cuotas_por_producto=cuotas_por_producto, num_cuotas=num_cuotas, selected_date=selected_date, today=today, max_date=max_date)
 
-    #     # Convertir los resultados a un DataFrame de pandas
-    #     df_resultados = pd.DataFrame(resultados_informe)
-
-    #     # Crear un objeto BytesIO para almacenar el archivo Excel
-    #     output = io.BytesIO()
-    #     df_resultados.to_excel(output, index=False, sheet_name='Sheet1')
-
-    #     # Devolver el archivo Excel como una descarga
-    #     output.seek(0)
-    #     return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='resultado_cobros.xlsx')
-
-    # return render_template('consultar_cobro.html', permisos=permisos, usuario=usuario)
 
 
 
@@ -614,13 +653,120 @@ def consultar_gastos(usuario):
 def inicio_web(usuario):
     if usuario != session['usuario']:
         return "Acceso denegado: No puedes acceder a esta página."
+    
     permisosConsultar = usuarios.get(usuario, {}).get('permisos', {}).get('gastos', [])
     permisos = usuarios.get(usuario, {}).get('permisos', {})
+    
     if 'consultar' in permisosConsultar:
-        return render_template('inicio.html', permisos=permisos, usuario=usuario)
+
+            return render_template('inicio.html', permisos=permisos, usuario=usuario)
     else:
         return "No tienes permisos para ver esta página."
+
+
+@app.route('/menu/admin/crear/<usuario>', methods=['GET', 'POST'])
+@login_required
+def cierre_mes(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+    if request.method == 'POST':
+        fecha_inicio = request.form['fecha_inicio']
+        fecha_fin = request.form['fecha_fin']
+
+        # Llama al procedimiento almacenado con parámetros ficticios
+        resultados = Info_para_Dashboar(fecha_inicio, fecha_fin, 'NO')
+        
+        # Define las columnas que deberían ser formateadas como moneda
+        columnas_monetarias = ['Capital', 'importeVenta','PagosRealizados','Pendiente','Abonos','ImporteInicial']  # Reemplaza con los nombres reales de las columnas
+        # Define los títulos específicos para cada conjunto de resultados
+        titulos = [
+            "Estado de la cartera",
+            "Venta/Cobro por mes y producto",
+            "Cobro por mes, producto y responsable"
+        ]
+
+        if len(resultados) >= 3:
+            # Pasar los resultados a la plantilla
+            return render_template('cierre_mes.html', permisos=permisos, usuario=usuario, resultados=resultados, columnas_monetarias=columnas_monetarias, titulos=titulos)
+    # Si no hay resultados o el método no es POST, renderizar la página sin resultados
+    return render_template('cierre_mes.html', permisos=permisos, usuario=usuario, resultados=[], columnas_monetarias=[], titulos=[])
+
+
+
+
+@app.route('/menu/admin/consultar/<usuario>', methods=['GET', 'POST'])
+@login_required
+def dashboard(usuario):
+    if usuario != session['usuario']:
+        return "Acceso denegado: No puedes acceder a esta página."
+
+    permisos = usuarios.get(usuario, {}).get('permisos', {})
+
+    # Llama al procedimiento almacenado con parámetros ficticios
+    resultados = Info_para_Dashboar('', '', 'SI')
     
+    # Define las columnas que deberían ser formateadas como moneda
+    columnas_monetarias = ['Capital', 'importeVenta','PagosRealizados','Pendiente','Abonos','ImporteInicial']  # Reemplaza con los nombres reales de las columnas
+    # Define los títulos específicos para cada conjunto de resultados
+    titulos = [
+        "Estado de la cartera",
+        "Indicador de",
+        "Cobro por mes, producto y responsable"
+    ]
+
+    if len(resultados) >= 3:
+        # Pasar los resultados a la plantilla
+        return render_template('dashboard.html', permisos=permisos, usuario=usuario, resultados=resultados[1], columnas_monetarias=columnas_monetarias, titulo=titulos[1])
+    
+    # Si no hay resultados, renderizar la página sin resultados
+    return render_template('dashboard.html', permisos=permisos, usuario=usuario, resultados=[], columnas_monetarias=[], titulo="")
+
+
+
+def Info_para_Dashboar(param1, param2, param3):
+    try:
+        # Establecer la conexión y el cursor
+        conn = db.session.connection().connection
+        cursor = conn.cursor()
+        
+        # Llamar al procedimiento almacenado
+        cursor.callproc('LiquidacionMes', [param1, param2, param3])
+
+        todos_resultados = []
+
+        # Iterar sobre cada conjunto de resultados
+        while True:
+            if cursor.description:
+                columnas = [desc[0] for desc in cursor.description]
+                # Omitir el conjunto de resultados de estadísticas
+                if 'Updated Rows' in columnas and 'Start time' in columnas and 'Finish time' in columnas:
+                    if not cursor.nextset():
+                        break
+                    continue
+                
+                filas = cursor.fetchall()
+                resultado = [dict(zip(columnas, fila)) for fila in filas]
+                todos_resultados.append(resultado)
+            
+            # Avanzar al siguiente conjunto de resultados
+            if not cursor.nextset():
+                break
+
+        # Cerrar el cursor
+        cursor.close()
+
+        return todos_resultados
+
+    except Exception as e:
+        # Manejo de errores
+        print(f"Error al ejecutar el procedimiento almacenado: {e}")
+        return None
+
+
+
+
 @app.route('/menu/buscador/<usuario>', methods=['GET', 'POST'])
 @login_required
 def buscador(usuario):
@@ -877,8 +1023,6 @@ def buscar_datos(termino_busqueda, campo_busqueda):
                 'cerrado': ord(venta.Cerrado)
             })
     return resultados
-
-
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):
