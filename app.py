@@ -1,5 +1,5 @@
 from collections import defaultdict
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify,send_from_directory,send_file
+from flask import Flask, json, render_template, request, redirect, url_for, flash, session, g, jsonify,send_from_directory,send_file
 from flask_session import Session
 from datetime import timedelta
 from functools import wraps
@@ -23,6 +23,8 @@ import io
 import pandas as pd
 from sqlalchemy import func, text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func, or_  # Asegúrate de que or_ esté importado aquí
+
 import locale 
 
 app = Flask(__name__)
@@ -679,7 +681,7 @@ def cierre_mes(usuario):
         resultados = Info_para_Dashboar(fecha_inicio, fecha_fin, 'NO')
         
         # Define las columnas que deberían ser formateadas como moneda
-        columnas_monetarias = ['Capital', 'importeVenta','PagosRealizados','Pendiente','Abonos','ImporteInicial']  # Reemplaza con los nombres reales de las columnas
+        columnas_monetarias = ['$ Capital', '$ Venta','$ Pagos','$ Pendiente','$ Abonos','$ Inicial']  # Reemplaza con los nombres reales de las columnas
         # Define los títulos específicos para cada conjunto de resultados
         titulos = [
             "Estado de la cartera",
@@ -708,7 +710,7 @@ def dashboard(usuario):
     resultados = Info_para_Dashboar('', '', 'SI')
     
     # Define las columnas que deberían ser formateadas como moneda
-    columnas_monetarias = ['Capital', 'importeVenta','PagosRealizados','Pendiente','Abonos','ImporteInicial']  # Reemplaza con los nombres reales de las columnas
+    columnas_monetarias = ['$ Capital', '$ Venta','$ Pagos','$ Pendiente','$ Abonos','$ Inicial']  # Reemplaza con los nombres reales de las columnas
     # Define los títulos específicos para cada conjunto de resultados
     titulos = [
         "Estado de la cartera",
@@ -718,6 +720,7 @@ def dashboard(usuario):
 
     if len(resultados) >= 3:
         # Pasar los resultados a la plantilla
+        print(json.dumps(resultados[2], indent=2))
         return render_template('dashboard.html', permisos=permisos, usuario=usuario, resultados=resultados[1], columnas_monetarias=columnas_monetarias, titulo=titulos[1])
     
     # Si no hay resultados, renderizar la página sin resultados
@@ -985,7 +988,7 @@ def buscar_datos(termino_busqueda, campo_busqueda):
     elif campo_busqueda == 'apellido':
         clientes = Cliente.query.filter(Cliente.Apellidos.like(f'%{termino_busqueda}%')).all()
     elif campo_busqueda == 'telefono':
-        clientes = Cliente.query.filter(db.or_(
+        clientes = Cliente.query.filter(or_(
             Cliente.Telefono1.like(f'%{termino_busqueda}%'),
             Cliente.Telefono2.like(f'%{termino_busqueda}%'),
             Cliente.Telefono3.like(f'%{termino_busqueda}%')
@@ -995,7 +998,11 @@ def buscar_datos(termino_busqueda, campo_busqueda):
     else:
         clientes = []
 
-   # Obtenemos los datos de venta relacionados con los clientes encontrados
+    # Verificamos si encontramos clientes
+    if not clientes:
+        return []
+
+    # Obtenemos los datos de venta relacionados con los clientes encontrados
     resultados = []
 
     for cliente in clientes:
@@ -1020,9 +1027,17 @@ def buscar_datos(termino_busqueda, campo_busqueda):
                 'importe_pent': importe_pendiente,
                 'num_cuotas': venta.NumCuotas,
                 'f_prox_cuota': venta.FProxCuota,
-                'cerrado': ord(venta.Cerrado)
+                'cerrado': bool(venta.Cerrado)
             })
+    
+    # Verificar la longitud de los resultados para asegurarse de que no esté vacío
+    if not resultados:
+        print("No se encontraron resultados.")
+    
+    print("Resultados encontrados:", resultados)
     return resultados
+
+
 
 @app.route('/visualizar_archivo/<filename>')
 def visualizar_archivo(filename):

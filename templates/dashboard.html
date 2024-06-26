@@ -1,25 +1,25 @@
 {% include 'menu.html' %}
 
 {% block content %}
-<div class="container">
-    <!-- Bloque de depuración -->
-    <!-- <div class="row">
-        <div class="col-md-12">
-            <h2>Debugging Information</h2>
-            <pre>{{ resultados | tojson }}</pre>
-            <pre>{{ titulo }}</pre>
-        </div>
-    </div> -->
-    
+<div class="container-fluid">
+
+    <hr>
     <div class="row">
         {% if resultados|length > 0 %}
         <div class="col-md-12">
-            <h2>{{ titulo }} - Importe Venta</h2>
-            <canvas id="line-chart-venta" width="800" height="400"></canvas>
+            <h4 class="text-center">{{ titulo }}  Ventas</h4>
+            <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="line-chart-venta"></canvas>
+            </div>
+            <hr>
         </div>
+        
         <div class="col-md-12">
-            <h2>{{ titulo }} - Abonos</h2>
-            <canvas id="line-chart-abonos" width="800" height="400"></canvas>
+            <h4 class="text-center">{{ titulo }} Cobros</h4>
+            <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+                <canvas id="line-chart-abonos"></canvas>
+            </div>
+            <hr>
         </div>
         {% endif %}
     </div>
@@ -34,17 +34,17 @@
         
         var groupedData = {};
         rawData.forEach(function(item) {
-            if (!groupedData[item.Mes_Liquidacion]) {
-                groupedData[item.Mes_Liquidacion] = {};
+            if (!groupedData[item['Mes/Cierre']]) {
+                groupedData[item['Mes/Cierre']] = {};
             }
-            if (!groupedData[item.Mes_Liquidacion][item.Nombre]) {
-                groupedData[item.Mes_Liquidacion][item.Nombre] = {
+            if (!groupedData[item['Mes/Cierre']][item.Nombre]) {
+                groupedData[item['Mes/Cierre']][item.Nombre] = {
                     importeVenta: 0,
                     Abonos: 0
                 };
             }
-            groupedData[item.Mes_Liquidacion][item.Nombre].importeVenta += parseFloat(item.importeVenta);
-            groupedData[item.Mes_Liquidacion][item.Nombre].Abonos += parseFloat(item.Abonos);
+            groupedData[item['Mes/Cierre']][item.Nombre].importeVenta += parseFloat(item['$ Venta']);
+            groupedData[item['Mes/Cierre']][item.Nombre].Abonos += parseFloat(item['$ Abonos']);
         });
 
         var labels = Object.keys(groupedData).sort();  // Ordenar las etiquetas
@@ -88,7 +88,7 @@
             });
 
             datasetsVenta.push({
-                label: product + ' - Importe Venta',
+                label: product,
                 data: importeVentaData,
                 borderColor: color,
                 backgroundColor: color.replace('1)', '0.2)'),
@@ -97,7 +97,7 @@
             });
 
             datasetsAbonos.push({
-                label: product + ' - Abonos',
+                label: product,
                 data: abonosData,
                 borderColor: color,
                 backgroundColor: color.replace('1)', '0.2)'),
@@ -114,6 +114,8 @@
                 datasets: datasetsVenta
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -130,6 +132,8 @@
                 datasets: datasetsAbonos
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -142,3 +146,20 @@
     });
 </script>
 {% endblock %}
+
+<style>
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+    }
+
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 300px;
+        }
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
