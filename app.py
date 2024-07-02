@@ -539,8 +539,13 @@ def cuotas_dia(usuario):
     max_date = today + timedelta(days=15)
     selected_date = request.form.get('selected_date') or request.args.get('selected_date') or today
     
-    # Realizar la consulta conjunta
-    cuotas = db.session.query(VentaEncabezado, Cliente, Producto.Nombre).join(Cliente, VentaEncabezado.IdCliente == Cliente.Id).join(VentaDetalle, VentaEncabezado.Id == VentaDetalle.IdVentaEncabezado).join(Producto, VentaDetalle.IdProducto == Producto.Id).filter(VentaEncabezado.FProxCuota == selected_date).all()
+    # cuotas = db.session.query(VentaEncabezado, Cliente, Producto.Nombre).join(Cliente, VentaEncabezado.IdCliente == Cliente.Id).join(VentaDetalle, VentaEncabezado.Id == VentaDetalle.IdVentaEncabezado).join(Producto, VentaDetalle.IdProducto == Producto.Id).filter(VentaEncabezado.FProxCuota == selected_date).all()
+    cuotas = (db.session.query(VentaEncabezado, Cliente, Producto.Nombre)
+            .join(Cliente, VentaEncabezado.IdCliente == Cliente.Id)
+            .join(VentaDetalle, VentaEncabezado.Id == VentaDetalle.IdVentaEncabezado)
+            .join(Producto, VentaDetalle.IdProducto == Producto.Id)
+            .filter(VentaEncabezado.FProxCuota == selected_date, VentaEncabezado.PreCerrado == 0)
+            .all())
     
     # Agrupar las cuotas por nombre de producto
     cuotas_por_producto = defaultdict(list)
