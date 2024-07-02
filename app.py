@@ -983,9 +983,11 @@ def descargar_informe_cobros():
         return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='Informe_Cobros.xlsx')
     else:
         return "No hay resultados para descargar."
-    
+
+def byte_to_bool(byte_value):
+    return byte_value == b'\x01'
+
 def buscar_datos(termino_busqueda, campo_busqueda):
-    # Realizamos la consulta a la base de datos según el campo de búsqueda seleccionado
     if campo_busqueda == 'nombre':
         clientes = Cliente.query.filter(Cliente.Nombres.like(f'%{termino_busqueda}%')).all()
     elif campo_busqueda == 'dni':
@@ -994,48 +996,72 @@ def buscar_datos(termino_busqueda, campo_busqueda):
         clientes = Cliente.query.filter(Cliente.Apellidos.like(f'%{termino_busqueda}%')).all()
     elif campo_busqueda == 'telefono':
         clientes = Cliente.query.filter(or_(
-            Cliente.Telefono1.like(f'%{termino_busqueda}%'),
+            Cliente.Telefono1.like(f'%{termino_busqueda}%')),
             Cliente.Telefono2.like(f'%{termino_busqueda}%'),
             Cliente.Telefono3.like(f'%{termino_busqueda}%')
-        )).all()
+        ).all()
     elif campo_busqueda == 'direccion':
         clientes = Cliente.query.filter(Cliente.Direccion.like(f'%{termino_busqueda}%')).all()
     else:
         clientes = []
 
-    # Verificamos si encontramos clientes
     if not clientes:
         return []
 
-    # Obtenemos los datos de venta relacionados con los clientes encontrados
     resultados = []
 
     for cliente in clientes:
-        # Consultamos las ventas asociadas a cada cliente
-        ventas_cliente = VentaEncabezado.query.filter_by(IdCliente=cliente.Id).all()
+        query = text("""
+            SELECT
+                Id, IdCliente, ImporteVenta, ImporteInicial, ImporteAbonos, SaldoPendiente, NumCuotas,
+                ImporteCuota, FVenta, FProxCuota, NumTarjeta, IdCompPago, IdUsuario, PreCerrado,
+                Cerrado, Ciudad, Responsable, Comentario, Auditado, Cancelada, Anulada, Perdida,
+                VLiquidada, FCreado, Pospuesta, FUpdPospuesta
+            FROM
+                VentasEncabezados
+            WHERE
+                IdCliente = :id_cliente
+        """)
+
+        ventas_cliente = db.session.execute(query, {'id_cliente': cliente.Id}).fetchall()
+
         for venta in ventas_cliente:
-            # Consultamos las cuotas asociadas a la venta y sumamos los abonos
             abonos = db.session.query(func.sum(Cuota.Abono)).filter_by(IdVentaEncabezado=venta.Id).scalar()
-            # Si no hay abonos, establecemos el valor en 0
             if abonos is None:
                 abonos = 0
-            # Calculamos el importe de venta ajustado
             importe_pendiente = venta.ImporteVenta - (venta.ImporteInicial + abonos)
+
+            # Convertir valores booleanos desde bytes a booleanos
+            cerrado = byte_to_bool(venta.Cerrado)
+            precerrado = byte_to_bool(venta.PreCerrado)
+            auditado = byte_to_bool(venta.Auditado)
+            cancelada = byte_to_bool(venta.Cancelada)
+            anulada = byte_to_bool(venta.Anulada)
+            perdida = byte_to_bool(venta.Perdida)
+            vliquidada = byte_to_bool(venta.VLiquidada)
+
+            print(f"Venta ID: {venta.Id}, Cerrado: {cerrado}, PreCerrado: {precerrado}, Auditado: {auditado}")
+
             resultados.append({
                 'num_tarjeta': venta.NumTarjeta,
                 'nombre': cliente.Nombres,
                 'apellido': cliente.Apellidos,
-                'telefono': cliente.Telefono1,  # Aquí puedes seleccionar el teléfono adecuado
+                'telefono': cliente.Telefono1,
                 'direccion': cliente.Direccion,
                 'dni': cliente.DNI,
                 'importe_venta': venta.ImporteVenta,
-                'importe_pent': importe_pendiente,
+                'importe_pend': importe_pendiente,
                 'num_cuotas': venta.NumCuotas,
                 'f_prox_cuota': venta.FProxCuota,
-                'cerrado': bool(venta.Cerrado)
+                'cerrado': cerrado,
+                'precerrado': precerrado,
+                'auditado': auditado,
+                'cancelada': cancelada,
+                'anulada': anulada,
+                'perdida': perdida,
+                'vliquidada': vliquidada
             })
     
-    # Verificar la longitud de los resultados para asegurarse de que no esté vacío
     if not resultados:
         print("No se encontraron resultados.")
     

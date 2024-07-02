@@ -1,105 +1,133 @@
-{% include 'menu.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Pantalla</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.3.2/dist/html2canvas.min.js"></script>
+    <style>
+        .watermark {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            opacity: 0.3;
+            font-size: 50px;
+            color: gray;
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    {% include 'menu.html' %}
 
-{% block content %}
-<input type="hidden" id="usuarioConectado" value="{{ usuario }}">
+    {% block content %}
+    <input type="hidden" id="usuarioConectado" value="{{ usuario }}">
 
-<div class="container mt-4">
-    <!-- Input para buscar por número de tarjeta -->
-    <div class="form-group">
-        <label for="numeroTarjeta">Número de Tarjeta:</label>
-        <input type="text" class="form-control" id="numeroTarjeta">
-        <button id="buscarBtn" class="btn btn-primary mt-2">Buscar</button>
-    </div>
+    <div class="container mt-4">
+        <!-- Input para buscar por número de tarjeta -->
+        <div class="form-group">
+            <label for="numeroTarjeta">Número de Tarjeta:</label>
+            <input type="text" class="form-control" id="numeroTarjeta">
+            <button id="buscarBtn" class="btn btn-primary mt-2">Buscar</button>
+        </div>
 
-    <div class="row mb-3">
-        <div class="col-12">
-            <h4 class="text-center mb-2">Encabezado:</h4>
-            <div class="row">
-                <!-- Grupo 1 -->
-                <div class="col-md-4">
-                    <div class="card mb-3 card-effect">
-                        <div class="card-body">
-                            <p><strong>Nº Fac:</strong> <span id="nfac"></span></p>
-                            <p><strong>F. Venta:</strong> <span id="fventa"></span></p>
-                            <p><strong>Vendedor:</strong> <span id="Vendedor"></span></p>
-                            <p><strong>Responsable:</strong> <span id="Responsable"></span></p>                            
-                            <p><strong>Periosidad de cobro:</strong> <span id="periosidaddecobro"></span></p>
-                            <p><strong>Cerrado:</strong> <span id="Cerrado"></span></p>
+        <div id="capturaContenido">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h4 class="text-center mb-2">Encabezado:</h4>
+                    <div class="row">
+                        <!-- Grupo 1 -->
+                        <div class="col-md-4">
+                            <div class="card mb-3 card-effect">
+                                <div class="card-body">
+                                    <p><strong>Nº Fac:</strong> <span id="nfac"></span></p>
+                                    <p><strong>F. Venta:</strong> <span id="fventa"></span></p>
+                                    <p><strong>Vendedor:</strong> <span id="Vendedor"></span></p>
+                                    <p><strong>Responsable:</strong> <span id="Responsable"></span></p>                            
+                                    <p><strong>Periosidad de cobro:</strong> <span id="periosidaddecobro"></span></p>
+                                    <p><strong>Cerrado:</strong> <span id="Cerrado"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Grupo 2 -->
+                        <div class="col-md-4">
+                            <div class="card mb-3 card-effect">
+                                <div class="card-body">
+                                    <p><strong>Nombre:</strong> <span id="nombre"></span></p>
+                                    <p><strong>Apellido:</strong> <span id="apellido"></span></p>
+                                    <p><strong>DNI:</strong> <span id="dni"></span></p>
+                                    <p><strong>Telefono:</strong> <span id="telefono"></span></p>
+                                    <p><strong>Direccion:</strong> <span id="direccion"></span></p>
+                                    <p><strong>Ciudad:</strong> <span id="ciudad"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Grupo 3 -->
+                        <div class="col-md-4">
+                            <div class="card mb-3 card-effect">
+                                <div class="card-body">
+                                    <p><strong>Importe Venta:</strong> <span id="importeventa"></span></p>
+                                    <p><strong>Importe Inicial:</strong> <span id="importeinicial"></span></p>
+                                    <p><strong>Imp Pendiente:</strong> <span id="importependiente"></span></p>
+                                    <p><strong>Imp Cuotas Pagadas:</strong> <span id="impcuotaspagadas"></span></p>
+                                    <p><strong>Nº Cuotas Pagadas:</strong> <span id="ncuotaspagadas"></span></p>
+                                    <p><strong>F. Proxima Cuota:</strong> <span id="fproximacuota"></span></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- Grupo 2 -->
-                <div class="col-md-4">
-                    <div class="card mb-3 card-effect">
-                        <div class="card-body">
-                            <p><strong>Nombre:</strong> <span id="nombre"></span></p>
-                            <p><strong>Apellido:</strong> <span id="apellido"></span></p>
-                            <p><strong>DNI:</strong> <span id="dni"></span></p>
-                            <p><strong>Telefono:</strong> <span id="telefono"></span></p>
-                            <p><strong>Direccion:</strong> <span id="direccion"></span></p>
-                            <p><strong>Ciudad:</strong> <span id="ciudad"></span></p>
-                        </div>
-                    </div>
+
+                <div class="col-12">    
+                    <p><strong>Comentario:</strong> <span id="comentario"></span></p>
                 </div>
-                <!-- Grupo 3 -->
-                <div class="col-md-4">
-                    <div class="card mb-3 card-effect">
-                        <div class="card-body">
-                            <p><strong>Importe Venta:</strong> <span id="importeventa"></span></p>
-                            <p><strong>Importe Inicial:</strong> <span id="importeinicial"></span></p>
-                            <p><strong>Imp Pendiente:</strong> <span id="importependiente"></span></p>
-                            <p><strong>Imp Cuotas Pagadas:</strong> <span id="impcuotaspagadas"></span></p>
-                            <p><strong>Nº Cuotas Pagadas:</strong> <span id="ncuotaspagadas"></span></p>
-                            <p><strong>F. Proxima Cuota:</strong> <span id="fproximacuota"></span></p>
-                        </div>
+            </div>
+
+            <!-- Productos -->
+            <div id="tablaProductosDiv" class="row mb-3">
+                <div class="col-12">
+                    <h4 class="text-center mb-2">Productos:</h4>
+                    <div class="table-responsive">
+                        <!-- Aquí se insertará la tabla de productos -->
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-12">    
-            <p><strong>Comentario:</strong> <span id="comentario"></span></p>
-        </div>
-    </div>
-
-
-
-    <!-- Productos -->
-    <div id="tablaProductosDiv" class="row mb-3">
-        <div class="col-12">
-            <h4 class="text-center mb-2">Productos:</h4>
+            <!-- Tabla para mostrar información de cuotas -->
             <div class="table-responsive">
-                <!-- Aquí se insertará la tabla de productos -->
+                <table class="table table-striped mt-4" id="tablaCuotas">
+                    <thead>
+                        <tr>
+                            <th>Cobrador</th>
+                            <th>NumTarjeta</th>
+                            <th>Nº Cuota</th>
+                            <th>F.Pago</th>
+                            <th>Abono</th>
+                            <th>Saldo</th>
+                            <th>Liquidado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Las filas se llenarán dinámicamente -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-
-
-    <!-- Tabla para mostrar información de cuotas -->
-    <div class="table-responsive">
-        <table class="table table-striped mt-4" id="tablaCuotas">
-            <thead>
-                <tr>
-                    <th>Cobrador</th>
-                    <th>NumTarjeta</th>
-                    <th>Nº Cuota</th>
-                    <th>F.Pago</th>
-                    <th>Abono</th>
-                    <th>Saldo</th>
-                    <th>Liquidado</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Las filas se llenarán dinámicamente -->
-            </tbody>
-        </table>
-    </div>
-    <button type="button" id="crearCobroBtn" class="btn btn-primary" style="display: none;">Crear Cobro</button>
+    <div class="container mt-4">
+        <div class="d-flex">
+            <button id="captureButton" class="btn btn-success mr-2" style="display: none;">Comprobante</button>
+            <button type="button" id="crearCobroBtn" class="btn btn-primary" style="display: none;">Crear Cobro</button>
+        </div>
+    </div>  
+    
 
     <!-- Modal para crear cobro -->
-    <div class="modal fade" id="crearCobroModal" tabindex="-1" role="dialog" aria-labelledby="crearCobroModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="crearCobroModal" tabindex="-1" role="dialog" aria-labelledby="crearCobroModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -121,7 +149,7 @@
                             <input type="text" class="form-control" id="FechaPago" required>
                         </div>
                         <div class="form-group">
-                            <label for="FechaProxPago">Fecha del Proximo Pafo:</label>
+                            <label for="FechaProxPago">Fecha del Proximo Pago:</label>
                             <input type="text" class="form-control" id="FechaProxPago" required>
                         </div>
                         <div class="form-group">
@@ -137,7 +165,6 @@
                                 <input type="checkbox" class="form-check-input" id="liquidado" name="liquidado">
                                 <label class="form-check-label" for="liquidado">Liquidado</label>
                             </div>
-
                         </div>
                         <div class="form-group">
                             <label for="calculo">Saldo:</label>
@@ -153,246 +180,301 @@
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    var IdVentaEncabezado = null;
-    function buscarTarjeta(numeroTarjeta) {
-
-
-        $.ajax({
-            url: `/get_tarjeta/${numeroTarjeta}`,
-            type: 'GET',
-            success: function (response) {
-                $('#tablaCuotas tbody').empty();
-                IdVentaEncabezado = response.encabezado.Id;
-
-                $.ajax({
-                    url: `/get_prod_tarjeta/${numeroTarjeta}`,
-                    type: 'GET',
-                    success: function (responseProd) {
-                        var encabezado = responseProd.encabezado[0];
-                        var productos = responseProd.productos;
-                        // Suponiendo que encabezado['F. Proxima Cuota'] es una cadena de fecha reconocible por JavaScript
-
-                        if (encabezado) {
-                            var fecha = new Date(encabezado['F. Proxima Cuota']);
-
-                            // Formatear la fecha a aaaa-mm-dd
-                            var fechaFormateada = fecha.toISOString().split('T')[0];
-                            $('#nfac').text(encabezado['Nº Fac']);
-                            $('#fventa').text(encabezado['F. Venta']);
-                            $('#Vendedor').text(encabezado.Vendedor);
-                            $('#periosidaddecobro').text(encabezado['Periosidad de cobro']);
-                            $('#Cerrado').text(encabezado.Cerrado);
-
-                            $('#nombre').text(encabezado.Nombre);
-                            $('#apellido').text(encabezado.Apellido);
-                            $('#dni').text(encabezado.DNI);
-                            $('#telefono').text(encabezado['Teléfono']);
-                            $('#direccion').text(encabezado['Dirección']);
-
-                            $('#importeventa').text(encabezado['Importe Venta']);
-                            $('#importeinicial').text(encabezado['Importe Inicial']);
-                            $('#importependiente').text(encabezado['Imp Pendiente']);
-                            $('#impcuotaspagadas').text(encabezado['Imp Cuotas Pagadas']);
-                            $('#ncuotaspagadas').text(encabezado['Nº Cuotas Pagadas']);
-                            $('#fproximacuota').text(fechaFormateada);
-                            $('#Ciudad').text(ciudad);
-                            $('#Responsable').text(responsable);
-                            $('#Comentario').text(comentario);
-                        } else {
-                            alert('No hay datos de encabezado para mostrar.');
-                        }
-
-                        if (productos) {
-                            var tabla = '<table class="table table-striped table-bordered table-relief"><thead><tr>';
-                            if (productos.length > 0) {
-                                for (var key in productos[0]) {
-                                    tabla += `<th>${key}</th>`;
-                                }
-                                tabla += '</tr></thead><tbody>';
-
-                                // Añadir filas de la tabla
-                                productos.forEach(function (producto) {
-                                    tabla += '<tr>';
-                                    for (var key in producto) {
-                                        tabla += `<td>${producto[key]}</td>`;
-                                    }
-                                    tabla += '</tr>';
-                                });
-
-                                tabla += '</tbody></table>';
-
-                                // Insertar la tabla en el div
-                                $('#tablaProductosDiv .table-responsive').html(tabla);
-                            } else {
-                                $('#tablaProductosDiv .table-responsive').html('<p class="text-center">No hay resultados de productos para mostrar.</p>');
-                            }
-                        } else { }
-
-                    },
-                    error: function (xhr, status, error) {
-                        alert('Error al buscar los datos del encabezado y productos.');
-                    }
-                });
-
-
-
-                // Obtener el cálculo y la suma de abonos
-                $.ajax({
-                    url: `/get_calculo/${IdVentaEncabezado}`,
-                    type: 'GET',
-                    success: function (responseCalculo) {
-                        calculoInicial = responseCalculo.calculo;
-                        $('#calculo').val(calculoInicial);
-
-                        // Formatear el cálculo y mostrarlo inicialmente
-                        var calculoFormateado = '$' + calculoInicial.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        $('#calculoFormateado').text(calculoFormateado);
-
-                    }
-                });
-
-                response.cuotas.forEach(function (cuota) {
-                    var fila = `<tr>
-                        <td>${cuota.cobrador}</td>
-                        <td>${response.encabezado.NumTarjeta}</td>
-                        <td>${cuota.NumCuota}</td>
-                        <td>${cuota.FechaPago}</td>
-                        <td>${cuota.Abono}</td>
-                        <td>${cuota.Saldo}</td>
-                        <td>${cuota.Liquidado}</td>
-                    </tr>`;
-                    $('#tablaCuotas tbody').append(fila);
-                });
-
-                var maxCuota = Math.max(...response.cuotas.map(c => c.NumCuota), 0) + 1;
-                $('#NumCuota').val(maxCuota);
-            },
-            error: function (xhr, status, error) {
-                alert('Error al buscar tarjeta.');
-            }
-        });
-
-        // Evento para actualizar el campo Calculo cuando se cambia el valor en Abono
-        $('#Abono').on('input', function () {
-            var abono = parseFloat($(this).val()) || 0;
-            if (abono > calculoInicial) {
-                alert('El abono no puede ser mayor al cálculo.');
-                $(this).val(calculoInicial);  // Establecer el abono al valor máximo permitido
-                abono = calculoInicial;
-            }
-            var calculoFinal = calculoInicial - abono;
-            $('#calculo').val(calculoFinal);
-
-            // Formatear el cálculo y mostrarlo
-            var calculoFormateado = '$' + calculoFinal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            $('#calculoFormateado').text(calculoFormateado);
-
-            // Formatear y mostrar el abono
-            var abonoFormateado = '$' + abono.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            $('#abonoFormateado').text(abonoFormateado);
-        });
-    }
-
-    $(document).ready(function () {
-        var usuarioConectado = $('#usuarioConectado').val();
+    <script>
+        var IdVentaEncabezado = null;
         var calculoInicial = 0;
-        var numeroTarjetaGlobal = 0;
 
-        $('#buscarBtn').click(function () {
-            numeroTarjetaGlobal = $('#numeroTarjeta').val();
-            if (!numeroTarjetaGlobal) {
+        document.getElementById('captureButton').addEventListener('click', function() {
+            var capturaContenido = document.getElementById('capturaContenido');
+
+            // Aplicar temporalmente los estilos de escritorio directamente al elemento
+            capturaContenido.style.width = '1200px';
+            capturaContenido.style.margin = '0 auto';
+
+            // Aplicar estilo de flex para mantener los elementos alineados horizontalmente
+            var headerRow = document.querySelector('.row.mb-3 .col-12 .row');
+            headerRow.style.display = 'flex';
+            headerRow.style.flexWrap = 'nowrap';
+            headerRow.style.justifyContent = 'space-between';
+
+            html2canvas(capturaContenido, { scale: 2 }).then(function(canvas) {
+                var ctx = canvas.getContext("2d");
+                var date = new Date();
+                var dateString = date.toLocaleString();
+                var watermarkText = "Mobiplaz - " + dateString;
+
+                // Guardar el contexto actual del canvas
+                ctx.save();
+
+                // Rotar el contexto del canvas en 30 grados
+                ctx.rotate(-30 * Math.PI / 180);
+                
+                // Agregar marca de agua repetida
+                ctx.font = "30px Arial";
+                ctx.fillStyle = "rgba(192, 192, 192, 0.3)"; // Opacidad reducida para mayor claridad
+                ctx.textAlign = "center";
+                
+                var xStep = 450; // Aumentar el espaciado horizontal
+                var yStep = 150; // Aumentar el espaciado vertical
+                for (var x = 0; x < canvas.width; x += xStep) {
+                    for (var y = 0; y < canvas.height; y += yStep) {
+                        ctx.fillText(watermarkText, x, y);
+                    }
+                }
+
+                // Restaurar el contexto original del canvas
+                ctx.restore();
+
+                // Convertir el canvas a una imagen
+                var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+                
+                // Crear un elemento de enlace
+                var link = document.createElement('a');
+                link.download = 'captura.png';
+                link.href = image;
+
+                // Simular un clic en el enlace para desencadenar la descarga
+                link.click();
+
+                // Revertir los estilos temporales
+                capturaContenido.style.width = '';
+                capturaContenido.style.margin = '';
+                headerRow.style.display = '';
+                headerRow.style.flexWrap = '';
+                headerRow.style.justifyContent = '';
+            });
+        });
+
+        document.getElementById('buscarBtn').addEventListener('click', function() {
+            var numeroTarjeta = document.getElementById('numeroTarjeta').value;
+            if (!numeroTarjeta) {
                 alert('Por favor, ingrese un número de tarjeta.');
                 return;
             }
-
-            // Llamada a la función buscarTarjeta
-            buscarTarjeta(numeroTarjetaGlobal);
+            buscarTarjeta(numeroTarjeta);
         });
 
-        $('#crearCobroBtn').show();
-
-        // Obtener los medios de pago
-        $.ajax({
-            url: '/get_medios_pago',
-            type: 'GET',
-            success: function (response) {
-                response.medios.forEach(function (medio) {
-                    $('#medioPago').append(new Option(medio.Nombre, medio.Id));
-                });
-            }
-        });
-
-        // Inicializar el calendario para FechaPago
-        flatpickr("#FechaPago", {
-            dateFormat: "Y-m-d"
-        });
-
-        flatpickr("#FechaProxPago", {
-            dateFormat: "Y-m-d"
-        });
-
-        // Buscar tarjeta y cuotas asociadas
-
-        $('#crearCobroBtn').click(function () {
-            $('#crearCobroModal').modal('show');
-
-
-        });
-
-        $('#guardarCobroBtn').click(function () {
-            var medioPago = $('#medioPago').val();
-            var fechaPago = $('#FechaPago').val();
-            var fechaproxpago = $('#FechaProxPago').val();
-            var numCuota = $('#NumCuota').val();
-            var abono = $('#Abono').val();
-            var liquidado = $('#liquidado').is(':checked') ? 1 : 0;
-            var calculo = $('#calculo').val();
-
-            if (!calculo) {
-                alert("El valor del cálculo está vacío");
-                return;
-            }
-
+        function buscarTarjeta(numeroTarjeta) {
             $.ajax({
-                url: `/menu/cobros/crear/` + usuarioConectado,
-                type: 'POST',
-                data: {
-                    medioPago: medioPago,
-                    fechaPago: fechaPago,
-                    fechaproxpago: fechaproxpago,
-                    numCuota: numCuota,
-                    abono: abono,
-                    liquidado: liquidado,
-                    calculo: calculo,
-                    IdVentaEncabezado: IdVentaEncabezado
-                },
+                url: `/get_tarjeta/${numeroTarjeta}`,
+                type: 'GET',
                 success: function (response) {
-                    alert(response.message);
-                    $('#crearCobroModal').modal('hide');
-                    buscarTarjeta(numeroTarjetaGlobal);
+                    $('#tablaCuotas tbody').empty();
+                    IdVentaEncabezado = response.encabezado.Id;
+
+                    $.ajax({
+                        url: `/get_prod_tarjeta/${numeroTarjeta}`,
+                        type: 'GET',
+                        success: function (responseProd) {
+                            var encabezado = responseProd.encabezado[0];
+                            var productos = responseProd.productos;
+
+                            if (encabezado) {
+                                var fecha = new Date(encabezado['F. Proxima Cuota']);
+                                var fechaFormateada = fecha.toISOString().split('T')[0];
+                                $('#nfac').text(encabezado['Nº Fac']);
+                                $('#fventa').text(encabezado['F. Venta']);
+                                $('#Vendedor').text(encabezado.Vendedor);
+                                $('#periosidaddecobro').text(encabezado['Periosidad de cobro']);
+                                $('#Cerrado').text(encabezado.Cerrado);
+
+                                $('#nombre').text(encabezado.Nombre);
+                                $('#apellido').text(encabezado.Apellido);
+                                $('#dni').text(encabezado.DNI);
+                                $('#telefono').text(encabezado['Teléfono']);
+                                $('#direccion').text(encabezado['Dirección']);
+
+                                $('#importeventa').text(encabezado['Importe Venta']);
+                                $('#importeinicial').text(encabezado['Importe Inicial']);
+                                $('#importependiente').text(encabezado['Imp Pendiente']);
+                                $('#impcuotaspagadas').text(encabezado['Imp Cuotas Pagadas']);
+                                $('#ncuotaspagadas').text(encabezado['Nº Cuotas Pagadas']);
+                                $('#fproximacuota').text(fechaFormateada);
+                                $('#Ciudad').text(encabezado.Ciudad);
+                                $('#Responsable').text(encabezado.Responsable);
+                                $('#Comentario').text(encabezado.Comentario);
+                            } else {
+                                alert('No hay datos de encabezado para mostrar.');
+                            }
+
+                            if (productos) {
+                                var tabla = '<table class="table table-striped table-bordered table-relief"><thead><tr>';
+                                if (productos.length > 0) {
+                                    for (var key in productos[0]) {
+                                        tabla += `<th>${key}</th>`;
+                                    }
+                                    tabla += '</tr></thead><tbody>';
+
+                                    productos.forEach(function (producto) {
+                                        tabla += '<tr>';
+                                        for (var key in producto) {
+                                            tabla += `<td>${producto[key]}</td>`;
+                                        }
+                                        tabla += '</tr>';
+                                    });
+
+                                    tabla += '</tbody></table>';
+
+                                    $('#tablaProductosDiv .table-responsive').html(tabla);
+                                } else {
+                                    $('#tablaProductosDiv .table-responsive').html('<p class="text-center">No hay resultados de productos para mostrar.</p>');
+                                }
+                            }
+
+                            // Mostrar el botón de captura de pantalla si hay resultados
+                            document.getElementById('captureButton').style.display = 'block';
+                            document.getElementById('crearCobroBtn').style.display = 'block';
+                        },
+                        error: function (xhr, status, error) {
+                            alert('Error al buscar los datos del encabezado y productos.');
+                        }
+                    });
+
+                    response.cuotas.forEach(function (cuota) {
+                        var fila = `<tr>
+                            <td>${cuota.cobrador}</td>
+                            <td>${response.encabezado.NumTarjeta}</td>
+                            <td>${cuota.NumCuota}</td>
+                            <td>${cuota.FechaPago}</td>
+                            <td>${cuota.Abono}</td>
+                            <td>${cuota.Saldo}</td>
+                            <td>${cuota.Liquidado}</td>
+                        </tr>`;
+                        $('#tablaCuotas tbody').append(fila);
+                    });
+
+                    var maxCuota = Math.max(...response.cuotas.map(c => c.NumCuota), 0) + 1;
+                    $('#NumCuota').val(maxCuota);
+
+                    // Obtener el cálculo y la suma de abonos
+                    $.ajax({
+                        url: `/get_calculo/${IdVentaEncabezado}`,
+                        type: 'GET',
+                        success: function (responseCalculo) {
+                            calculoInicial = responseCalculo.calculo;
+                            $('#calculo').val(calculoInicial);
+
+                            // Formatear el cálculo y mostrarlo inicialmente
+                            var calculoFormateado = '$' + calculoInicial.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            $('#calculoFormateado').text(calculoFormateado);
+                        }
+                    });
+
+                    // Evento para actualizar el campo Calculo cuando se cambia el valor en Abono
+                    $('#Abono').on('input', function () {
+                        var abono = parseFloat($(this).val()) || 0;
+                        if (abono > calculoInicial) {
+                            alert('El abono no puede ser mayor al cálculo.');
+                            $(this).val(calculoInicial);  // Establecer el abono al valor máximo permitido
+                            abono = calculoInicial;
+                        }
+                        var calculoFinal = calculoInicial - abono;
+                        $('#calculo').val(calculoFinal);
+
+                        // Formatear el cálculo y mostrarlo
+                        var calculoFormateado = '$' + calculoFinal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        $('#calculoFormateado').text(calculoFormateado);
+
+                        // Formatear y mostrar el abono
+                        var abonoFormateado = '$' + abono.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        $('#abonoFormateado').text(abonoFormateado);
+                    });
                 },
                 error: function (xhr, status, error) {
-                    alert('Error al crear el cobro.');
+                    alert('Error al buscar tarjeta.');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            var usuarioConectado = $('#usuarioConectado').val();
+            var numeroTarjetaGlobal = 0;
+
+            $('#buscarBtn').click(function () {
+                numeroTarjetaGlobal = $('#numeroTarjeta').val();
+                if (!numeroTarjetaGlobal) {
+                    alert('Por favor, ingrese un número de tarjeta.');
+                    return;
+                }
+
+                buscarTarjeta(numeroTarjetaGlobal);
+            });
+
+            $('#crearCobroBtn').show();
+
+            $.ajax({
+                url: '/get_medios_pago',
+                type: 'GET',
+                success: function (response) {
+                    response.medios.forEach(function (medio) {
+                        $('#medioPago').append(new Option(medio.Nombre, medio.Id));
+                    });
                 }
             });
 
-            // Clearing the form fields in the modal
-            $('#medioPago').val('');
-            $('#FechaPago').val('');
-            $('#FechaProxPago').val('');
-            $('#NumCuota').val('');
-            $('#Abono').val('');
-            $('#liquidado').prop('checked', false);
-            $('#calculo').val('');
-            console.log('Formulario del modal limpiado');  // Debugging message
-            console.log(numeroTarjetaGlobal)
-            // Refrescar la información
+            flatpickr("#FechaPago", {
+                dateFormat: "Y-m-d"
+            });
 
+            flatpickr("#FechaProxPago", {
+                dateFormat: "Y-m-d"
+            });
+
+            $('#crearCobroBtn').click(function () {
+                $('#crearCobroModal').modal('show');
+            });
+
+            $('#guardarCobroBtn').click(function () {
+                var medioPago = $('#medioPago').val();
+                var fechaPago = $('#FechaPago').val();
+                var fechaproxpago = $('#FechaProxPago').val();
+                var numCuota = $('#NumCuota').val();
+                var abono = $('#Abono').val();
+                var liquidado = $('#liquidado').is(':checked') ? 1 : 0;
+                var calculo = $('#calculo').val();
+
+                if (!calculo) {
+                    alert("El valor del cálculo está vacío");
+                    return;
+                }
+
+                $.ajax({
+                    url: `/menu/cobros/crear/` + usuarioConectado,
+                    type: 'POST',
+                    data: {
+                        medioPago: medioPago,
+                        fechaPago: fechaPago,
+                        fechaproxpago: fechaproxpago,
+                        numCuota: numCuota,
+                        abono: abono,
+                        liquidado: liquidado,
+                        calculo: calculo,
+                        IdVentaEncabezado: IdVentaEncabezado
+                    },
+                    success: function (response) {
+                        alert(response.message);
+                        $('#crearCobroModal').modal('hide');
+                        buscarTarjeta(numeroTarjetaGlobal);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error al crear el cobro.');
+                    }
+                });
+
+                $('#medioPago').val('');
+                $('#FechaPago').val('');
+                $('#FechaProxPago').val('');
+                $('#NumCuota').val('');
+                $('#Abono').val('');
+                $('#liquidado').prop('checked', false);
+                $('#calculo').val('');
+                console.log('Formulario del modal limpiado');
+                console.log(numeroTarjetaGlobal);
+            });
         });
-    });
+    </script>
 
-</script>
-{% endblock %}
+    {% endblock %}
+</body>
+</html>

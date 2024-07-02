@@ -41,12 +41,21 @@
                     <th scope="col">Importe Pendiente</th>
                     <th scope="col">Numero Cuotas</th>
                     <th scope="col">Fecha Prox Cuota</th>
+                    <th scope="col">PreCerrado</th>
                     <th scope="col">Cerrado</th>
                 </tr>
             </thead>
             <tbody>
                 {% for resultado in resultados %}
-                <tr {% if resultado.cerrado %}class="table-danger"{% else %}class="table-success"{% endif %}>
+                <tr class="
+                    {% if resultado.cerrado %}
+                        table-danger
+                    {% elif resultado.precerrado %}
+                        table-info
+                    {% else %}
+                        table-success
+                    {% endif %}
+                ">
                     <td>
                         <form action="{{ url_for('consultar_tarjeta', usuario=usuario) }}" method="post">
                             <input type="hidden" name="id_venta" value="{{ resultado.num_tarjeta }}">
@@ -63,10 +72,17 @@
                     <td>{{ resultado.num_cuotas }}</td>
                     <td>{{ resultado.f_prox_cuota }}</td>
                     <td>
+                        {% if resultado.precerrado %}
+                            <i class="bi bi-lock-fill"></i> <!-- Icono de cerrojo cerrado -->
+                        {% else %}
+                            <i class="bi bi-unlock-fill"></i> <!-- Icono de cerrojo abierto -->
+                        {% endif %}
+                    </td>
+                    <td>
                         {% if resultado.cerrado %}
-                        <i class="bi bi-lock-fill"></i> <!-- Icono de cerrojo cerrado -->
-                    {% else %}
-                        <i class="bi bi-unlock-fill"></i> <!-- Icono de cerrojo abierto -->
+                            <i class="bi bi-lock-fill"></i> <!-- Icono de cerrojo cerrado -->
+                        {% else %}
+                            <i class="bi bi-unlock-fill"></i> <!-- Icono de cerrojo abierto -->
                         {% endif %}
                     </td>
                 </tr>
@@ -76,7 +92,6 @@
     </div>
     {% endif %}
 </div>
-
 
 <script type="text/javascript">
     $(document).ready( function () {
